@@ -4,15 +4,13 @@ using ProductTypeApi.Models;
 
 namespace ProductTypeApi.Data
 {
-    /*───────────────────────────────────────────────────────────────*
-     * 1. Interface
-     *───────────────────────────────────────────────────────────────*/
+
     public interface IProductTypeRepository
     {
         Task<List<ProductType>> GetAllProductTypesAsync();
-        Task<int>  CreateProductTypeAsync(ProductType productType);   // returns new Id
-        Task<bool> UpdateProductTypeAsync(ProductType productType);   // true = success
-        Task<bool> DeleteProductTypeAsync(int id);                    // true = success
+        Task<int>  CreateProductTypeAsync(ProductType productType);   
+        Task<bool> UpdateProductTypeAsync(ProductType productType);  
+        Task<bool> DeleteProductTypeAsync(int id);                   
     }
 
     /*───────────────────────────────────────────────────────────────*
