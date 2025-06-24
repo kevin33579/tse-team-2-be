@@ -12,51 +12,95 @@ namespace ProductApi.Data
         Task<bool> UpdateProductAsync(Product product);                                    // UPDATE - Return success status
         Task<bool> DeleteProductAsync(int id);
     }
-    
+
     public class ProductRepository : IProductRepository
     {
         private readonly string _connectionString;
 
         public ProductRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection") 
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
 
+        // public async Task<List<Product>> GetAllProductsAsync()
+        // {
+        //     var products = new List<Product>();
+
+        //     using (var connection = new MySqlConnection(_connectionString))
+        //     {
+        //         await connection.OpenAsync();
+        //         string queryString = @"
+        //             SELECT * 
+        //             FROM product 
+        //             ORDER BY name";
+        //         using (var command = new MySqlCommand(queryString, connection))
+        //         {
+        //             using (var reader = await command.ExecuteReaderAsync())
+        //             {
+        //                 while (await reader.ReadAsync())
+        //                 {
+        //                     var product = new Product
+        //                     {
+        //                         id = reader.GetInt32("id"),
+        //                         name = reader.GetString("name"),
+        //                         price = reader.GetDecimal("price"),
+        //                         stock = reader.GetInt32("stock"),
+        //                         description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+        //                         productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId")
+
+        //                     };
+
+        //                     // Tambahkan product ke list
+        //                     products.Add(product);
+        //                 }
+        //             }
+        //         }
+        //     }
+
+        //     return products;
+        // }
         public async Task<List<Product>> GetAllProductsAsync()
         {
             var products = new List<Product>();
-            
-            using (var connection = new MySqlConnection(_connectionString))
+
+            try
             {
-                await connection.OpenAsync();
-                string queryString = @"
-                    SELECT * 
-                    FROM Products 
-                    ORDER BY Name";
-                using (var command = new MySqlCommand(queryString, connection))
+                using (var connection = new MySqlConnection(_connectionString))
                 {
-                    using (var reader = await command.ExecuteReaderAsync())
+                    await connection.OpenAsync();
+                    string queryString = @"
+                SELECT * 
+                FROM product 
+                ORDER BY name";
+                    using (var command = new MySqlCommand(queryString, connection))
                     {
-                        while (await reader.ReadAsync())
+                        using (var reader = await command.ExecuteReaderAsync())
                         {
-                            var product = new Product
+                            while (await reader.ReadAsync())
                             {
-                                ProductId = reader.GetInt32("ProductId"),
-                                Name = reader.GetString("Name"),
-                                Price = reader.GetDecimal("Price"),
-                                Stock = reader.GetInt32("Stock"),
-                                Description = reader.IsDBNull("Description") ? null : reader.GetString("Description"),
-                                ProductTypeID = reader.GetInt32("ProductTypeID")
-                            };
-                            
-                            // Tambahkan product ke list
-                            products.Add(product);
+                                var product = new Product
+                                {
+                                    id = reader.GetInt32("id"),
+                                    name = reader.GetString("name"),
+                                    price = reader.GetDecimal("price"),
+                                    stock = reader.GetInt32("stock"),
+                                    description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+                                    productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId")
+                                };
+
+                                products.Add(product);
+                            }
                         }
                     }
                 }
             }
-            
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ ERROR GetAllProductsAsync: " + ex.Message);
+                throw;
+            }
+
             return products;
         }
         public async Task<Product?> GetProductByIdAsync(int id)
@@ -64,34 +108,35 @@ namespace ProductApi.Data
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                
+
                 string queryString = @"
                     SELECT *
-                    FROM Products 
-                    WHERE ProductID = @ProductID";
-                
+                    FROM product 
+                    WHERE id = @id";
+
                 using (var command = new MySqlCommand(queryString, connection))
                 {
-                    command.Parameters.AddWithValue("@ProductID", id);
-                    
+                    command.Parameters.AddWithValue("@id", id);
+
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         if (await reader.ReadAsync())
                         {
                             return new Product
                             {
-                                ProductId = reader.GetInt32("ProductId"),
-                                Name = reader.GetString("Name"),
-                                Price = reader.GetDecimal("Price"),
-                                Stock = reader.GetInt32("Stock"),
-                                Description = reader.IsDBNull("Description") ? null : reader.GetString("Description"),
-                                ProductTypeID = reader.GetInt32("ProductTypeID")
+                                id = reader.GetInt32("id"),
+                                name = reader.GetString("name"),
+                                price = reader.GetDecimal("price"),
+                                stock = reader.GetInt32("stock"),
+                                description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+                                productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId")
+
                             };
                         }
                     }
                 }
             }
-            
+
             return null;
         }
         public async Task<int> CreateProductAsync(Product product)
@@ -99,24 +144,24 @@ namespace ProductApi.Data
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                
+
                 // Query INSERT dengan LAST_INSERT_ID() untuk mendapatkan ID yang baru dibuat
                 // LAST_INSERT_ID() return ID terakhir yang di-insert dalam connection saat ini
                 string queryString = @"
-                    INSERT INTO Products (Name, Price, Stock, Description, ProductTypeID)
-                    VALUES (@Name, @Price, @Stock, @Description, @ProductTypeID);
+                    INSERT INTO product (name, price, stock, description, productTypeId)
+                    VALUES (@name, @price, @stock, @description, @productTypeId);
                     SELECT LAST_INSERT_ID();";
-                
+
                 using (var command = new MySqlCommand(queryString, connection))
                 {
-                    command.Parameters.AddWithValue("@Name", product.Name);
-                    command.Parameters.AddWithValue("@Price", product.Price);
-                    command.Parameters.AddWithValue("@Stock", product.Stock);
-                    command.Parameters.AddWithValue("@Description", product.Description ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@ProductTypeId", product.ProductTypeID);
-                    
+                    command.Parameters.AddWithValue("@name", product.name);
+                    command.Parameters.AddWithValue("@price", product.price);
+                    command.Parameters.AddWithValue("@stock", product.stock);
+                    command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
+
                     var result = await command.ExecuteScalarAsync();
-                    
+
                     return Convert.ToInt32(result);
                 }
             }
@@ -126,30 +171,30 @@ namespace ProductApi.Data
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                
+
                 string queryString = @"
-                    UPDATE Products 
-                    SET Name = @Name, 
-                        Price = @Price, 
-                        Stock = @Stock, 
-                        Description = @Description
-                        ProductTypeID = @ProductTypeID
-                    WHERE ProductId = @ProductId";
-                
+                    UPDATE product 
+                    SET name = @name, 
+                        price = @price, 
+                        stock = @stock, 
+                        description = @description,
+                        productTypeId = @productTypeId
+                    WHERE id = @id";
+
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     // Parameter untuk UPDATE (termasuk ProductID untuk WHERE clause)
-                    command.Parameters.AddWithValue("@ProductId", product.ProductId);
-                    command.Parameters.AddWithValue("@Name", product.Name);
-                    command.Parameters.AddWithValue("@price", product.Price);
-                    command.Parameters.AddWithValue("@Stock", product.Stock);
-                    command.Parameters.AddWithValue("@Description", product.Description ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@ProductTypeID", product.ProductTypeID);
-                    
+                    command.Parameters.AddWithValue("@id", product.id);
+                    command.Parameters.AddWithValue("@name", product.name);
+                    command.Parameters.AddWithValue("@price", product.price);
+                    command.Parameters.AddWithValue("@stock", product.stock);
+                    command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
+
                     // ExecuteNonQuery = untuk operasi yang tidak return data (INSERT, UPDATE, DELETE)
                     // Return int = jumlah rows yang affected
                     var rowsAffected = await command.ExecuteNonQueryAsync();
-                    
+
                     // Return true jika ada row yang ter-update (rowsAffected > 0)
                     // Return false jika tidak ada row yang ter-update (kemungkinan ID tidak ditemukan)
                     return rowsAffected > 0;
@@ -166,18 +211,18 @@ namespace ProductApi.Data
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                
+
                 // Query DELETE sederhana dengan WHERE clause
-                string queryString = "DELETE FROM Products WHERE ProductId = @ProductId";
-                
+                string queryString = "DELETE FROM product WHERE id = @id";
+
                 using (var command = new MySqlCommand(queryString, connection))
                 {
                     // Parameter untuk WHERE clause
-                    command.Parameters.AddWithValue("@ProductId", id);
-                    
+                    command.Parameters.AddWithValue("@id", id);
+
                     // ExecuteNonQuery untuk operasi DELETE
                     var rowsAffected = await command.ExecuteNonQueryAsync();
-                    
+
                     // Return true jika ada row yang terhapus
                     // Return false jika tidak ada row yang terhapus (ID tidak ditemukan)
                     return rowsAffected > 0;

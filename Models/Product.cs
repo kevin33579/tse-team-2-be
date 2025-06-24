@@ -4,18 +4,18 @@ namespace ProductApi.Models
 {
     public class Product
     {
-        public int ProductId { get; set; }
-        public int? ProductTypeID { get; set; }
+        public int id { get; set; }
+        public int? productTypeId { get; set; }
         
         [Required]
         [StringLength(100)]
-        public string Name { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
         
         [Range(0, double.MaxValue)]
-        public decimal Price { get; set; }
+        public decimal price { get; set; }
         
-        public int Stock { get; set; }
+        public int stock { get; set; }
 
-        public string? Description { get; set; }
+        public string? description { get; set; }
     }
 }
