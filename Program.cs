@@ -1,6 +1,6 @@
 // Import namespace untuk ProductRepository
 using UserApi.Data;
-
+using ProductApi.Data;
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -27,6 +27,7 @@ builder.Services.AddSwaggerGen();
 // IProductRepository akan di-resolve ke ProductRepository
 // Setiap kali controller butuh IProductRepository, DI container akan provide ProductRepository instance
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // =====================================
 // CORS CONFIGURATION
