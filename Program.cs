@@ -1,6 +1,10 @@
 // Import namespace untuk ProductRepository
 using UserApi.Data;
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+>>>>>>> 00b6af1 (User)
 using ProductApi.Data;
 using ProductTypeApi.Data;
 using ScheduleApi.Data;
@@ -9,6 +13,9 @@ using CartApi.Data;
 
 using ProductApi.Configuration;
 using ProductApi.Middleware;
+=======
+
+>>>>>>> 63f13e6 (User)
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -28,6 +35,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // =====================================
+<<<<<<< HEAD
 // CONFIGURATION SETTINGS REGISTRATION
 // =====================================
 // Configure strongly typed settings objects
@@ -41,6 +49,8 @@ builder.Services.Configure<FileUploadSettings>(
     builder.Configuration.GetSection("FileUploadSettings"));
 
 // =====================================
+=======
+>>>>>>> 63f13e6 (User)
 // DEPENDENCY INJECTION REGISTRATION
 // =====================================
 // AddScoped = register service dengan Scoped lifetime
@@ -48,12 +58,18 @@ builder.Services.Configure<FileUploadSettings>(
 // IProductRepository akan di-resolve ke ProductRepository
 // Setiap kali controller butuh IProductRepository, DI container akan provide ProductRepository instance
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+<<<<<<< HEAD
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
+<<<<<<< HEAD
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
+=======
+=======
+>>>>>>> 63f13e6 (User)
+>>>>>>> 00b6af1 (User)
 
 // =====================================
 // CORS CONFIGURATION
@@ -95,7 +111,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+<<<<<<< HEAD
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+=======
+>>>>>>> 63f13e6 (User)
 // UseHttpsRedirection() = middleware untuk redirect HTTP ke HTTPS
 // Security best practice - semua request akan di-redirect ke HTTPS
 app.UseHttpsRedirection();
@@ -128,4 +147,8 @@ app.Run();
 // 4. Router akan direct request ke controller yang sesuai
 // 5. Controller akan call repository untuk data access
 // 6. Repository akan connect ke database dan return data
+<<<<<<< HEAD
 // 7. Response akan dikirim kembali ke client
+=======
+// 7. Response akan dikirim kembali ke client
+>>>>>>> 63f13e6 (User)
