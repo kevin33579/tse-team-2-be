@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/tse-backend.csproj": {}
+    "H:\\PT taldio\\tse-team-2-be\\tse-backend.csproj": {}
   },
   "projects": {
-    "/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/tse-backend.csproj": {
+    "H:\\PT taldio\\tse-team-2-be\\tse-backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/tse-backend.csproj",
+        "projectUniqueName": "H:\\PT taldio\\tse-team-2-be\\tse-backend.csproj",
         "projectName": "tse-backend",
-        "projectPath": "/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/tse-backend.csproj",
-        "packagesPath": "/Users/mac/.nuget/packages/",
-        "outputPath": "/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/",
+        "projectPath": "H:\\PT taldio\\tse-team-2-be\\tse-backend.csproj",
+        "packagesPath": "C:\\Users\\RIZEN\\.nuget\\packages\\",
+        "outputPath": "H:\\PT taldio\\tse-team-2-be\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/mac/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\RIZEN\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -76,7 +76,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
