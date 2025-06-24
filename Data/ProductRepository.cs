@@ -20,9 +20,47 @@ namespace ProductApi.Data
         public ProductRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
 
+        // public async Task<List<Product>> GetAllProductsAsync()
+        // {
+        //     var products = new List<Product>();
+
+        //     using (var connection = new MySqlConnection(_connectionString))
+        //     {
+        //         await connection.OpenAsync();
+        //         string queryString = @"
+        //             SELECT * 
+        //             FROM product 
+        //             ORDER BY name";
+        //         using (var command = new MySqlCommand(queryString, connection))
+        //         {
+        //             using (var reader = await command.ExecuteReaderAsync())
+        //             {
+        //                 while (await reader.ReadAsync())
+        //                 {
+        //                     var product = new Product
+        //                     {
+        //                         id = reader.GetInt32("id"),
+        //                         name = reader.GetString("name"),
+        //                         price = reader.GetDecimal("price"),
+        //                         stock = reader.GetInt32("stock"),
+        //                         description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+        //                         productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId")
+
+        //                     };
+
+        //                     // Tambahkan product ke list
+        //                     products.Add(product);
+        //                 }
+        //             }
+        //         }
+        //     }
+
+        //     return products;
+        // }
         // public async Task<List<Product>> GetAllProductsAsync()
         // {
         //     var products = new List<Product>();
@@ -70,9 +108,9 @@ namespace ProductApi.Data
                 {
                     await connection.OpenAsync();
                     string queryString = @"
-        SELECT * 
-        FROM product 
-        ORDER BY name";
+                SELECT * 
+                FROM product 
+                ORDER BY name";
                     using (var command = new MySqlCommand(queryString, connection))
                     {
                         using (var reader = await command.ExecuteReaderAsync())
@@ -101,6 +139,12 @@ namespace ProductApi.Data
                 throw;
             }
 
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ ERROR GetAllProductsAsync: " + ex.Message);
+                throw;
+            }
+
             return products;
         }
         public async Task<Product?> GetProductByIdAsync(int id)
@@ -108,6 +152,7 @@ namespace ProductApi.Data
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
+
 
                 string queryString = @"
                     SELECT *
@@ -137,7 +182,6 @@ namespace ProductApi.Data
                 }
             }
 
-            
             return null;
         }
         public async Task<int> CreateProductAsync(Product product)
@@ -145,6 +189,7 @@ namespace ProductApi.Data
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
+
 
                 // Query INSERT dengan LAST_INSERT_ID() untuk mendapatkan ID yang baru dibuat
                 // LAST_INSERT_ID() return ID terakhir yang di-insert dalam connection saat ini
@@ -173,6 +218,7 @@ namespace ProductApi.Data
             {
                 await connection.OpenAsync();
 
+
                 string queryString = @"
                     UPDATE product 
                     SET name = @name, 
@@ -196,6 +242,7 @@ namespace ProductApi.Data
                     // Return int = jumlah rows yang affected
                     var rowsAffected = await command.ExecuteNonQueryAsync();
 
+
                     // Return true jika ada row yang ter-update (rowsAffected > 0)
                     // Return false jika tidak ada row yang ter-update (kemungkinan ID tidak ditemukan)
                     return rowsAffected > 0;
@@ -213,6 +260,7 @@ namespace ProductApi.Data
             {
                 await connection.OpenAsync();
 
+
                 // Query DELETE sederhana dengan WHERE clause
                 string queryString = "DELETE FROM product WHERE id = @id";
 
@@ -223,6 +271,7 @@ namespace ProductApi.Data
 
                     // ExecuteNonQuery untuk operasi DELETE
                     var rowsAffected = await command.ExecuteNonQueryAsync();
+
 
                     // Return true jika ada row yang terhapus
                     // Return false jika tidak ada row yang terhapus (ID tidak ditemukan)
