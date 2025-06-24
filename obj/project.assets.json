@@ -1999,19 +1999,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/mac/.nuget/packages/": {}
+    "/Users/marcellinuskevinferdinand/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/tse-backend.csproj",
+      "projectUniqueName": "/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/tse-backend.csproj",
       "projectName": "tse-backend",
-      "projectPath": "/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/tse-backend.csproj",
-      "packagesPath": "/Users/mac/.nuget/packages/",
-      "outputPath": "/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/",
+      "projectPath": "/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/tse-backend.csproj",
+      "packagesPath": "/Users/marcellinuskevinferdinand/.nuget/packages/",
+      "outputPath": "/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/mac/.nuget/NuGet/NuGet.Config"
+        "/Users/marcellinuskevinferdinand/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
