@@ -20,7 +20,6 @@ namespace ProductApi.Data
         public ProductRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
 
@@ -133,12 +132,6 @@ namespace ProductApi.Data
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ ERROR GetAllProductsAsync: " + ex.Message);
-                throw;
-            }
-
             catch (Exception ex)
             {
                 Console.WriteLine("❌ ERROR GetAllProductsAsync: " + ex.Message);
