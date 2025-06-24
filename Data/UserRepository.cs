@@ -33,9 +33,8 @@ namespace UserApi.Data
                 // Query SQL untuk mengambil semua produk
                 // @ untuk multiline string, lebih mudah dibaca
                 string queryString = @"
-                    SELECT ProductID, ProductName, UnitPrice, CategoryID, Description, CreatedDate 
-                    FROM Products 
-                    ORDER BY ProductName";
+                    SELECT Id, Username, Email, CreatedDate 
+                    FROM Users ";
 
                 // MySqlCommand = object untuk menjalankan SQL command
                 using (var command = new MySqlCommand(queryString, connection))
@@ -48,8 +47,8 @@ namespace UserApi.Data
                         {
                             var user = new User
                             {
-                                UserID = reader.GetInt32("UserID"),
-                                UserName = reader.GetString("UserName"),
+                                Id = reader.GetInt32("Id"),
+                                Username = reader.GetString("UserName"),
                                 Email = reader.GetString("Email"),
                                 Password = reader.GetString("Password"),
                                 RoleID = reader.GetInt32("RoleID"),
