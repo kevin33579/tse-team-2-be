@@ -10,7 +10,7 @@ namespace ProductApi.Models
         [Required]
         [StringLength(100)]
         public string name { get; set; } = string.Empty;
-        
+       
         [Range(0, double.MaxValue)]
         public decimal price { get; set; }
         

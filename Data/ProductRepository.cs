@@ -70,9 +70,9 @@ namespace ProductApi.Data
                 {
                     await connection.OpenAsync();
                     string queryString = @"
-                SELECT * 
-                FROM product 
-                ORDER BY name";
+        SELECT * 
+        FROM product 
+        ORDER BY name";
                     using (var command = new MySqlCommand(queryString, connection))
                     {
                         using (var reader = await command.ExecuteReaderAsync())
@@ -137,6 +137,7 @@ namespace ProductApi.Data
                 }
             }
 
+            
             return null;
         }
         public async Task<int> CreateProductAsync(Product product)
