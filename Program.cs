@@ -2,6 +2,10 @@
 using UserApi.Data;
 using ProductApi.Data;
 using ProductTypeApi.Data;
+using ScheduleApi.Data;
+using CartItemApi.Data;
+using CartApi.Data;
+
 using ProductApi.Configuration;
 using ProductApi.Middleware;
 // =====================================
@@ -45,6 +49,10 @@ builder.Services.Configure<FileUploadSettings>(
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
+builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
+builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+
 
 // =====================================
 // CORS CONFIGURATION

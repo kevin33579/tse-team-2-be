@@ -35,13 +35,13 @@ INSERT INTO users (username, email, `password`, roleId) VALUES
 -- =====================
 -- TABEL: productType
 -- =====================
-CREATE TABLE productType (
+CREATE TABLE product_type (
     id INT AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(100) NOT NULL,
     `description` TEXT
 );
 
-INSERT INTO productType (name, description)
+INSERT INTO product_type (name, description)
 VALUES
   ('SUV', 'Sport Utility Vehicle, designed for both on-road and off-road use'),
   ('LCGC', 'Low Cost Green Car, fuel-efficient and affordable vehicle'),
@@ -70,32 +70,57 @@ INSERT INTO product (`name`, price, stock, `description`, productTypeId) VALUES
 -- =====================
 CREATE TABLE schedule (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    time DATETIME NOT NULL,
-    productId INT,
-    FOREIGN KEY (productId) REFERENCES product(id)
+    time DATETIME NOT NULL
 );
 
-INSERT INTO schedule (time, productId) VALUES
-('2025-07-01 10:00:00', 1),
-('2025-07-02 14:00:00', 2);
+INSERT INTO schedule (time) VALUES
+('2025-07-01 10:00:00'),
+('2025-07-02 14:00:00');
 
 -- =====================
 -- TABEL: cart
 -- =====================
-CREATE TABLE cart (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    productId INT,
-    userId INT,
-    scheduleId INT,
-    quantity INT,
-    FOREIGN KEY (productId) REFERENCES product(id),
-    FOREIGN KEY (userId) REFERENCES users(id),
-    FOREIGN KEY (scheduleId) REFERENCES schedule(id)
+CREATE TABLE carts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_checked_out BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-INSERT INTO cart (productId, userId, scheduleId, quantity) VALUES
-(1, 2, 1, 1),
-(2, 2, 2, 2);
+
+
+-- =====================
+-- TABEL: cart items
+-- =====================
+
+CREATE TABLE cart_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cart_id INT NOT NULL,
+    product_id INT NOT NULL,
+    schedule_id INT,
+    quantity INT ,
+
+    FOREIGN KEY (cart_id) REFERENCES carts(id),
+    FOREIGN KEY (product_id) REFERENCES product(id),
+    FOREIGN KEY (schedule_id) REFERENCES schedule(id)
+);
+
+-- =====================
+-- TABEL: Orders
+-- =====================
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    cart_id INT,
+    order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(10,2),
+    status ENUM('PENDING', 'PAID', 'CANCELLED') DEFAULT 'PENDING',
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (cart_id) REFERENCES carts(id)
+);
+
+
 
 -- =====================
 -- TABEL: paymentMethod
