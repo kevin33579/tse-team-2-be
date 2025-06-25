@@ -2,6 +2,8 @@
 using UserApi.Data;
 using ProductApi.Data;
 using ProductTypeApi.Data;
+using ProductApi.Configuration;
+using ProductApi.Middleware;
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -19,6 +21,19 @@ builder.Services.AddEndpointsApiExplorer();
 // AddSwaggerGen() = mendaftarkan Swagger generator
 // Swagger = tools untuk generate dokumentasi API otomatis
 builder.Services.AddSwaggerGen();
+
+// =====================================
+// CONFIGURATION SETTINGS REGISTRATION
+// =====================================
+// Configure strongly typed settings objects
+builder.Services.Configure<AppSettings>(
+    builder.Configuration.GetSection("AppSettings"));
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<SecuritySettings>(
+    builder.Configuration.GetSection("SecuritySettings"));
+builder.Services.Configure<FileUploadSettings>(
+    builder.Configuration.GetSection("FileUploadSettings"));
 
 // =====================================
 // DEPENDENCY INJECTION REGISTRATION
