@@ -41,9 +41,12 @@ CREATE TABLE productType (
     `description` TEXT
 );
 
-INSERT INTO productType (`name`, `description`) VALUES
-('Service', 'Car maintenance services'),
-('Parts', 'Car spare parts');
+INSERT INTO productType (name, description)
+VALUES
+  ('SUV', 'Sport Utility Vehicle, designed for both on-road and off-road use'),
+  ('LCGC', 'Low Cost Green Car, fuel-efficient and affordable vehicle'),
+  ('Sedan', 'Passenger car with a three-box configuration'),
+  ('Truck', 'Motor vehicle designed to transport cargo');
 
 -- =====================
 -- TABEL: product
@@ -59,8 +62,8 @@ CREATE TABLE product (
 );
 
 INSERT INTO product (`name`, price, stock, `description`, productTypeId) VALUES
-('Oil Change', 250000, 100, 'Basic oil change service', 1),
-('Brake Pads', 400000, 50, 'Front brake pads', 2);
+('Kijang Innova', 700000, 100, 'Course SUV Kijang Innova', 1);
+
 
 -- =====================
 -- TABEL: schedule
