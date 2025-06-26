@@ -104,6 +104,47 @@ namespace ProductApi.Controllers
             }
         }
 
+        [HttpGet("search")]
+        public async Task<ActionResult<List<Product>>> SearchProducts(
+            [FromQuery] string? searchTerm,
+            [FromQuery] int? productTypeId,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice)
+        {
+            try
+            {
+                // Validasi rentang harga
+                if (minPrice.HasValue && maxPrice.HasValue && minPrice > maxPrice)
+                {
+                    return BadRequest("Harga minimum tidak boleh lebih besar dari harga maksimum");
+                }
+
+                if (minPrice.HasValue && minPrice < 0)
+                {
+                    return BadRequest("Harga minimum tidak boleh negatif");
+                }
+
+                if (maxPrice.HasValue && maxPrice < 0)
+                {
+                    return BadRequest("Harga maksimum tidak boleh negatif");
+                }
+
+                _logger.LogInformation("🔍 SearchProducts dipanggil | Term: {SearchTerm}, TypeId: {ProductTypeId}, Min: {MinPrice}, Max: {MaxPrice}",
+                    searchTerm, productTypeId, minPrice, maxPrice);
+
+                var products = await _productRepository.SearchProductsAsync(searchTerm ?? "", productTypeId, minPrice, maxPrice);
+
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Terjadi error saat mencari produk");
+                return StatusCode(500, $"Terjadi kesalahan server: {ex.Message}");
+            }
+        }
+
+
+
 
         // =====================================
         // GET: api/products/price-range?minPrice=10&maxPrice=100
