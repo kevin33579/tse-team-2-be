@@ -1,4 +1,9 @@
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+
 // Import namespace untuk ProductRepository
 using UserApi.Data;
 <<<<<<< HEAD
@@ -150,7 +155,7 @@ app.Run();
 // 6. Repository akan connect ke database dan return data
 // 7. Response akan dikirim kembali ke clientredirect ke HTTPS
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
