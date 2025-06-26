@@ -1,111 +1,75 @@
-using Microsoft.AspNetCore.Mvc;     // Untuk Controller dan ActionResult
-using ProductApi.Data;              // Untuk interface IProductRepository
-using ProductApi.Models;            // Untuk model Product
+using Microsoft.AspNetCore.Mvc;
+using ProductApi.Data;
+using ProductApi.Models;
+using Microsoft.Extensions.Logging;
 
 namespace ProductApi.Controllers
 {
-    // [ApiController] - Attribute yang menandakan ini adalah API Controller
-    // Memberikan fitur otomatis seperti model validation, error handling, dll
     [ApiController]
-    // [Route] - Menentukan base URL untuk controller ini
-    // [controller] akan diganti dengan nama controller tanpa "Controller" (Products)
-    // Jadi URL base-nya adalah: /api/products
     [Route("api/products")]
-    public class ProductsController : ControllerBase  // Inherit dari ControllerBase untuk API
+    public class ProductsController : ControllerBase
     {
-        // Field untuk menyimpan dependency yang akan di-inject
-        private readonly IProductRepository _productRepository;  // Repository untuk akses data
-        private readonly ILogger<ProductsController> _logger;    // Logger untuk mencatat aktivitas
+        private readonly IProductRepository _productRepository;
+        private readonly ILogger<ProductsController> _logger;
 
-        // Constructor - dipanggil saat controller dibuat
-        // ASP.NET Core akan otomatis inject dependency yang dibutuhkan (Dependency Injection)
         public ProductsController(IProductRepository productRepository, ILogger<ProductsController> logger)
         {
-            _productRepository = productRepository;  // Simpan repository instance
-            _logger = logger;                       // Simpan logger instance
+            _productRepository = productRepository;
+            _logger = logger;
         }
 
-        // =====================================
-        // GET: api/products
-        // =====================================
-        // [HttpGet] - Menandakan ini adalah HTTP GET request
-        // URL: GET /api/products
         [HttpGet]
-        // async Task<ActionResult<List<Product>>> - Method async yang return list product
-        // ActionResult memungkinkan kita return berbagai HTTP response (200, 404, 500, dll)
-        public async Task<ActionResult<List<Product>>> GetProducts()
-        {
-            try  // Try-catch untuk menangani error
-            {
-                // Log informasi bahwa method ini dipanggil
-                _logger.LogInformation("Mengambil semua produk");
-
-                // Panggil repository untuk mengambil semua produk dari database
-                // await = tunggu sampai operasi async selesai
-                var products = await _productRepository.GetAllProductsAsync();
-
-                // Return HTTP 200 OK dengan data products
-                return Ok(products);
-            }
-            catch (Exception ex)  // Tangkap semua jenis exception
-            {
-                // Log error dengan detail exception
-                _logger.LogError(ex, "Error saat mengambil produk");
-
-                // Return HTTP 500 Internal Server Error
-                return StatusCode(500, "Terjadi kesalahan server");
-            }
-        }
-
-        // =====================================
-        // GET: api/products/5
-        // =====================================
-        // {id} dalam route menandakan ini adalah parameter dinamis
-        // URL: GET /api/products/1, /api/products/2, dst
-        [HttpGet("{id}")]
-        // Parameter int id akan otomatis di-bind dari URL
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ApiResult<List<Product>>>> GetProducts()
         {
             try
             {
-                // Panggil repository untuk mencari produk berdasarkan ID
-                var product = await _productRepository.GetProductByIdAsync(id);
-
-                // Cek apakah produk ditemukan
-                if (product == null)
-                {
-                    // Return HTTP 404 Not Found jika produk tidak ada
-                    return NotFound($"Produk dengan ID {id} tidak ditemukan");
-                }
-
-                // Return HTTP 200 OK dengan data produk
-                return Ok(product);
+                _logger.LogInformation("Mengambil semua produk");
+                var products = await _productRepository.GetAllProductsAsync();
+                return Ok(ApiResult<List<Product>>.SuccessResult(products, "Produk berhasil diambil"));
             }
             catch (Exception ex)
             {
-                // Log error dengan detail ID produk yang dicari
+                _logger.LogError(ex, "Error saat mengambil produk");
+                return StatusCode(500, ApiResult<List<Product>>.ErrorResult("Terjadi kesalahan server", 500));
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ApiResult<Product>>> GetProduct(int id)
+        {
+            try
+            {
+                var product = await _productRepository.GetProductByIdAsync(id);
+
+                if (product == null)
+                    return NotFound(ApiResult<Product>.ErrorResult($"Produk dengan ID {id} tidak ditemukan", 404));
+
+                return Ok(ApiResult<Product>.SuccessResult(product, "Produk ditemukan"));
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "Error saat mengambil produk dengan ID {ProductId}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<Product>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
 
         [HttpGet("type/{productTypeId}")]
-        public async Task<ActionResult<List<Product>>> GetProductsByTypeId(int productTypeId)
+        public async Task<ActionResult<ApiResult<List<Product>>>> GetProductsByTypeId(int productTypeId)
         {
             try
             {
                 var products = await _productRepository.GetProductsByTypeIdAsync(productTypeId);
-                return Ok(products);
+                return Ok(ApiResult<List<Product>>.SuccessResult(products, "Produk berdasarkan tipe berhasil diambil"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil produk dengan ProductTypeId {ProductTypeId}", productTypeId);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<List<Product>>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<List<Product>>> SearchProducts(
+        public async Task<ActionResult<ApiResult<List<Product>>>> SearchProducts(
             [FromQuery] string? searchTerm,
             [FromQuery] int? productTypeId,
             [FromQuery] decimal? minPrice,
@@ -113,169 +77,104 @@ namespace ProductApi.Controllers
         {
             try
             {
-                // Validasi rentang harga
+                var errors = new List<string>();
                 if (minPrice.HasValue && maxPrice.HasValue && minPrice > maxPrice)
-                {
-                    return BadRequest("Harga minimum tidak boleh lebih besar dari harga maksimum");
-                }
+                    errors.Add("Harga minimum tidak boleh lebih besar dari harga maksimum");
+                if (minPrice < 0) errors.Add("Harga minimum tidak boleh negatif");
+                if (maxPrice < 0) errors.Add("Harga maksimum tidak boleh negatif");
 
-                if (minPrice.HasValue && minPrice < 0)
-                {
-                    return BadRequest("Harga minimum tidak boleh negatif");
-                }
+                if (errors.Any())
+                    return BadRequest(ApiResult<List<Product>>.ErrorResult(errors, 400));
 
-                if (maxPrice.HasValue && maxPrice < 0)
-                {
-                    return BadRequest("Harga maksimum tidak boleh negatif");
-                }
-
-                _logger.LogInformation("🔍 SearchProducts dipanggil | Term: {SearchTerm}, TypeId: {ProductTypeId}, Min: {MinPrice}, Max: {MaxPrice}",
-                    searchTerm, productTypeId, minPrice, maxPrice);
-
+                _logger.LogInformation("SearchProducts dipanggil");
                 var products = await _productRepository.SearchProductsAsync(searchTerm ?? "", productTypeId, minPrice, maxPrice);
-
-                return Ok(products);
+                return Ok(ApiResult<List<Product>>.SuccessResult(products, "Hasil pencarian berhasil diambil"));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Terjadi error saat mencari produk");
-                return StatusCode(500, $"Terjadi kesalahan server: {ex.Message}");
+                _logger.LogError(ex, "Terjadi error saat mencari produk");
+                return StatusCode(500, ApiResult<List<Product>>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
 
-
-
-
-        // =====================================
-        // GET: api/products/price-range?minPrice=10&maxPrice=100
-        // =====================================
-        // URL dengan query parameters, contoh: /api/products/price-range?minPrice=100000&maxPrice=1000000
-
-        // [FromQuery] - Parameter diambil dari query string UR
-
-        // =====================================
-        // POST: api/products
-        // =====================================
-        // [HttpPost] - Menandakan ini adalah HTTP POST request untuk membuat data baru
         [HttpPost]
-        // [FromBody] - Data produk diambil dari request body (JSON)
-        public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
+        public async Task<ActionResult<ApiResult<Product>>> CreateProduct([FromBody] Product product)
         {
             try
             {
-                // ModelState.IsValid - Cek apakah model memenuhi validasi yang didefinisikan
-                // (Required, StringLength, Range, dll di model Product)
                 if (!ModelState.IsValid)
                 {
-                    // Return HTTP 400 Bad Request dengan detail error validasi
-                    return BadRequest(ModelState);
+                    var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                                  .Select(e => e.ErrorMessage)
+                                                  .ToList();
+                    return BadRequest(ApiResult<Product>.ErrorResult(errors, 400));
                 }
 
-                // Panggil repository untuk menyimpan produk baru ke database
-                // Repository akan return ID produk yang baru dibuat
                 var productId = await _productRepository.CreateProductAsync(product);
-
-                // Set ID produk dengan ID yang baru dibuat
                 product.id = productId;
 
-                // CreatedAtAction - Return HTTP 201 Created
-                // Parameter: nama action untuk GET by ID, route values, object yang dibuat
-                // Header Location akan berisi URL untuk mengakses produk yang baru dibuat
-                return CreatedAtAction(nameof(GetProduct), new { id = productId }, product);
+                var result = ApiResult<Product>.SuccessResult(product, "Produk berhasil dibuat", 201);
+                return CreatedAtAction(nameof(GetProduct), new { id = productId }, result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat membuat produk baru");
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult<Product>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
 
-        // =====================================
-        // PUT: api/products/5
-        // =====================================
-        // [HttpPut] - Menandakan ini adalah HTTP PUT request untuk update data
-        // URL: PUT /api/products/1, /api/products/2, dst
         [HttpPut("{id}")]
-        // Parameter id dari URL dan product dari request body
-        public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
+        public async Task<ActionResult<ApiResult>> UpdateProduct(int id, [FromBody] Product product)
         {
             try
             {
-                // Validasi: ID di URL harus sama dengan ProductID di body
-                // Ini untuk memastikan konsistensi data
                 if (id != product.id)
-                {
-                    return BadRequest("ID produk tidak sesuai");
-                }
+                    return BadRequest(ApiResult.ErrorResult("ID produk tidak sesuai", 400));
 
-                // Cek validasi model
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(ModelState);
+                    var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                                  .Select(e => e.ErrorMessage)
+                                                  .ToList();
+                    return BadRequest(ApiResult.ErrorResult(errors, 400));
                 }
 
-                // Cek apakah produk yang akan diupdate ada di database
                 var existingProduct = await _productRepository.GetProductByIdAsync(id);
                 if (existingProduct == null)
-                {
-                    // Return HTTP 404 jika produk tidak ditemukan
-                    return NotFound($"Produk dengan ID {id} tidak ditemukan");
-                }
+                    return NotFound(ApiResult.ErrorResult($"Produk dengan ID {id} tidak ditemukan", 404));
 
-                // Panggil repository untuk update produk
                 var success = await _productRepository.UpdateProductAsync(product);
-
                 if (success)
-                {
-                    // Return HTTP 204 No Content jika update berhasil
-                    // No Content = operasi berhasil tapi tidak return data
-                    return NoContent();
-                }
+                    return Ok(ApiResult.SuccessResult("Produk berhasil diupdate"));
 
-                // Return HTTP 500 jika update gagal di database
-                return StatusCode(500, "Gagal mengupdate produk");
+                return StatusCode(500, ApiResult.ErrorResult("Gagal mengupdate produk", 500));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengupdate produk dengan ID {ProductId}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
 
-        // =====================================
-        // DELETE: api/products/5
-        // =====================================
-        // [HttpDelete] - Menandakan ini adalah HTTP DELETE request untuk hapus data
-        // URL: DELETE /api/products/1, /api/products/2, dst
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<ActionResult<ApiResult>> DeleteProduct(int id)
         {
             try
             {
-                // Cek dulu apakah produk yang akan dihapus ada di database
                 var existingProduct = await _productRepository.GetProductByIdAsync(id);
                 if (existingProduct == null)
-                {
-                    // Return HTTP 404 jika produk tidak ditemukan
-                    return NotFound($"Produk dengan ID {id} tidak ditemukan");
-                }
+                    return NotFound(ApiResult.ErrorResult($"Produk dengan ID {id} tidak ditemukan", 404));
 
-                // Panggil repository untuk menghapus produk dari database
                 var success = await _productRepository.DeleteProductAsync(id);
-
                 if (success)
-                {
-                    // Return HTTP 204 No Content jika delete berhasil
-                    return NoContent();
-                }
+                    return Ok(ApiResult.SuccessResult("Produk berhasil dihapus"));
 
-                // Return HTTP 500 jika delete gagal di database
-                return StatusCode(500, "Gagal menghapus produk");
+                return StatusCode(500, ApiResult.ErrorResult("Gagal menghapus produk", 500));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat menghapus produk dengan ID {ProductId}", id);
-                return StatusCode(500, "Terjadi kesalahan server");
+                return StatusCode(500, ApiResult.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
     }
