@@ -1,10 +1,8 @@
-<<<<<<< HEAD
 # Build results
-bin/
-obj/
+/bin/
+/obj/
 .DS_Store
-=======
-# Ignore build folders
-bin/
-obj/
->>>>>>> origin/development
+*.pdb
+*.dll
+/net9.0/
+/net9.0/net9.0/
