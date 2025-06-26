@@ -1,6 +1,10 @@
 // Import namespace untuk ProductRepository
 using UserApi.Data;
 
+using ProductApi.Data;
+using ProductTypeApi.Data;
+using ProductApi.Configuration;
+using ProductApi.Middleware;
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -20,6 +24,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // =====================================
+// CONFIGURATION SETTINGS REGISTRATION
+// =====================================
+// Configure strongly typed settings objects
+builder.Services.Configure<AppSettings>(
+    builder.Configuration.GetSection("AppSettings"));
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<SecuritySettings>(
+    builder.Configuration.GetSection("SecuritySettings"));
+builder.Services.Configure<FileUploadSettings>(
+    builder.Configuration.GetSection("FileUploadSettings"));
+
+// =====================================
 // DEPENDENCY INJECTION REGISTRATION
 // =====================================
 // AddScoped = register service dengan Scoped lifetime
@@ -27,6 +44,8 @@ builder.Services.AddSwaggerGen();
 // IProductRepository akan di-resolve ke ProductRepository
 // Setiap kali controller butuh IProductRepository, DI container akan provide ProductRepository instance
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
 
 // =====================================
 // CORS CONFIGURATION

@@ -1,0 +1,169 @@
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/appsettings.Development.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/appsettings.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/tse-backend.staticwebassets.endpoints.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/tse-backend
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/tse-backend.deps.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/tse-backend.runtimeconfig.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/tse-backend.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/tse-backend.pdb
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/BouncyCastle.Cryptography.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/Google.Protobuf.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/K4os.Compression.LZ4.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/K4os.Compression.LZ4.Streams.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/K4os.Hash.xxHash.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/Microsoft.AspNetCore.OpenApi.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/Microsoft.OpenApi.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/MySql.Data.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/System.Configuration.ConfigurationManager.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/System.Security.Cryptography.ProtectedData.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/System.Security.Permissions.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/System.Windows.Extensions.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/ZstdSharp.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/runtimes/win-x64/native/comerr64.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/runtimes/win-x64/native/gssapi64.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/runtimes/win-x64/native/k5sprt64.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/runtimes/win-x64/native/krb5_64.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/runtimes/win-x64/native/krbcc64.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/bin/Debug/net9.0/runtimes/win/lib/net8.0/System.Windows.Extensions.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.csproj.AssemblyReference.cache
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/rpswa.dswa.cache.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.GeneratedMSBuildEditorConfig.editorconfig
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.AssemblyInfoInputs.cache
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.AssemblyInfo.cs
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.csproj.CoreCompileInputs.cache
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.MvcApplicationPartsAssemblyInfo.cs
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.MvcApplicationPartsAssemblyInfo.cache
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.sourcelink.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/rjimswa.dswa.cache.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/rjsmrazor.dswa.cache.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/rjsmcshtml.dswa.cache.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/scopedcss/bundle/tse-backend.styles.css
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/staticwebassets.build.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/staticwebassets.build.json.cache
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/staticwebassets.development.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/staticwebassets.build.endpoints.json
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-back.F2F97370.Up2Date
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/refint/tse-backend.dll
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.pdb
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/tse-backend.genruntimeconfig.cache
+/Users/mac/Desktop/taldio-react/c#/tse-team-be/tse-backend/obj/Debug/net9.0/ref/tse-backend.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/appsettings.Development.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/appsettings.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/net9.0/appsettings.Development.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/net9.0/appsettings.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/net9.0/tse-backend.deps.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/net9.0/tse-backend.runtimeconfig.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/net9.0/tse-backend.staticwebassets.endpoints.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/tse-backend.staticwebassets.endpoints.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/tse-backend
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/tse-backend.deps.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/tse-backend.runtimeconfig.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/tse-backend.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/tse-backend.pdb
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/BouncyCastle.Cryptography.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/Google.Protobuf.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/K4os.Compression.LZ4.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/K4os.Compression.LZ4.Streams.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/K4os.Hash.xxHash.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/Microsoft.AspNetCore.OpenApi.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/Microsoft.OpenApi.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/MySql.Data.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/System.Configuration.ConfigurationManager.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/System.Security.Cryptography.ProtectedData.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/System.Security.Permissions.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/System.Windows.Extensions.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/ZstdSharp.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/runtimes/win-x64/native/comerr64.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/runtimes/win-x64/native/gssapi64.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/runtimes/win-x64/native/k5sprt64.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/runtimes/win-x64/native/krb5_64.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/runtimes/win-x64/native/krbcc64.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/bin/Debug/net9.0/runtimes/win/lib/net8.0/System.Windows.Extensions.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.csproj.AssemblyReference.cache
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/rpswa.dswa.cache.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.GeneratedMSBuildEditorConfig.editorconfig
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.AssemblyInfoInputs.cache
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.AssemblyInfo.cs
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.csproj.CoreCompileInputs.cache
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.MvcApplicationPartsAssemblyInfo.cs
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.MvcApplicationPartsAssemblyInfo.cache
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/rjimswa.dswa.cache.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/rjsmrazor.dswa.cache.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/rjsmcshtml.dswa.cache.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/scopedcss/bundle/tse-backend.styles.css
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/staticwebassets.build.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/staticwebassets.build.json.cache
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/staticwebassets.development.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/staticwebassets.build.endpoints.json
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-back.F2F97370.Up2Date
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/refint/tse-backend.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.pdb
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.genruntimeconfig.cache
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/ref/tse-backend.dll
+/Users/marcellinuskevinferdinand/bootcamp/final project/tse-team-2-be/obj/Debug/net9.0/tse-backend.sourcelink.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\appsettings.Development.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\appsettings.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\net9.0\appsettings.Development.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\net9.0\appsettings.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\net9.0\tse-backend.deps.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\net9.0\tse-backend.runtimeconfig.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\net9.0\tse-backend.staticwebassets.endpoints.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\tse-backend.staticwebassets.endpoints.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\tse-backend.exe
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\tse-backend.deps.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\tse-backend.runtimeconfig.json
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\tse-backend.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\tse-backend.pdb
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\Google.Protobuf.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\K4os.Compression.LZ4.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\K4os.Compression.LZ4.Streams.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\K4os.Hash.xxHash.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\Microsoft.AspNetCore.OpenApi.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\Microsoft.OpenApi.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\MySql.Data.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\System.Configuration.ConfigurationManager.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\System.Security.Cryptography.ProtectedData.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\System.Security.Permissions.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\System.Windows.Extensions.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\ZstdSharp.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\runtimes\win-x64\native\comerr64.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\runtimes\win-x64\native\gssapi64.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\runtimes\win-x64\native\k5sprt64.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\runtimes\win-x64\native\krb5_64.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\runtimes\win-x64\native\krbcc64.dll
+H:\PT taldio\tse-team-2-be\bin\Debug\net9.0\runtimes\win\lib\net8.0\System.Windows.Extensions.dll
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.csproj.AssemblyReference.cache
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\rpswa.dswa.cache.json
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.GeneratedMSBuildEditorConfig.editorconfig
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.AssemblyInfoInputs.cache
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.AssemblyInfo.cs
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.csproj.CoreCompileInputs.cache
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.MvcApplicationPartsAssemblyInfo.cs
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.MvcApplicationPartsAssemblyInfo.cache
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.sourcelink.json
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\rjimswa.dswa.cache.json
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\rjsmrazor.dswa.cache.json
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\scopedcss\bundle\tse-backend.styles.css
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\staticwebassets.build.json
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\staticwebassets.build.json.cache
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\staticwebassets.development.json
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\staticwebassets.build.endpoints.json
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-back.F2F97370.Up2Date
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.dll
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\refint\tse-backend.dll
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.pdb
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\tse-backend.genruntimeconfig.cache
+H:\PT taldio\tse-team-2-be\obj\Debug\net9.0\ref\tse-backend.dll

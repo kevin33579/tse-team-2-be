@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 # Build results
 bin/
 obj/
 .DS_Store
+=======
+# Ignore build folders
+bin/
+obj/
+>>>>>>> origin/development
