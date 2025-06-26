@@ -11,6 +11,7 @@ namespace ProductTypeApi.Data
     {
         Task<List<ProductType>> GetAllProductTypesAsync();
         Task<int>  CreateProductTypeAsync(ProductType productType);   // returns new Id
+        
         Task<bool> UpdateProductTypeAsync(ProductType productType);   // true = success
         Task<bool> DeleteProductTypeAsync(int id);                    // true = success
     }
