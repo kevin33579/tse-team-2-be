@@ -1,6 +1,7 @@
 using System.Data; // DataSet, DataRow, DataNulll
 using MySql.Data.MySqlClient; // MySqlConnection, MySqlCommand, MySqlDataAdapter
 using ProductApi.Models; // Product
+using ProductApi.Exceptions;
 
 namespace ProductApi.Data
 {
@@ -109,97 +110,8 @@ namespace ProductApi.Data
                 using (var connection = new MySqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
-                    string queryString = @"
-                SELECT * 
-                FROM product 
-                ORDER BY name";
+                    string queryString = @"SELECT * FROM product ORDER BY name";
                     using (var command = new MySqlCommand(queryString, connection))
-                    {
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                var product = new Product
-                                {
-                                    id = reader.GetInt32("id"),
-                                    name = reader.GetString("name"),
-                                    price = reader.GetDecimal("price"),
-                                    stock = reader.GetInt32("stock"),
-                                    description = reader.IsDBNull("description") ? null : reader.GetString("description"),
-                                    productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
-                                    imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
-                                };
-
-                                products.Add(product);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ ERROR GetAllProductsAsync: " + ex.Message);
-                throw;
-            }
-
-            return products;
-        }
-        public async Task<Product?> GetProductByIdAsync(int id)
-        {
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-
-
-                string queryString = @"
-                    SELECT *
-                    FROM product 
-                    WHERE id = @id";
-
-                using (var command = new MySqlCommand(queryString, connection))
-                {
-                    command.Parameters.AddWithValue("@id", id);
-
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        if (await reader.ReadAsync())
-                        {
-                            return new Product
-                            {
-                                id = reader.GetInt32("id"),
-                                name = reader.GetString("name"),
-                                price = reader.GetDecimal("price"),
-                                stock = reader.GetInt32("stock"),
-                                description = reader.IsDBNull("description") ? null : reader.GetString("description"),
-                                productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
-                                imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
-
-                            };
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        public async Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId)
-        {
-            var products = new List<Product>();
-
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string queryString = @"
-                        SELECT * 
-                        FROM product 
-                        WHERE productTypeId = @productTypeId
-                        ORDER BY name";
-
-                using (var command = new MySqlCommand(queryString, connection))
-                {
-                    command.Parameters.AddWithValue("@productTypeId", productTypeId);
-
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
@@ -214,147 +126,251 @@ namespace ProductApi.Data
                                 productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
                                 imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl")
                             };
-
                             products.Add(product);
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("SELECT", "Gagal mengambil data produk", ex);
+            }
 
             return products;
         }
+
+        public async Task<Product?> GetProductByIdAsync(int id)
+        {
+            try
+            {
+                using (var connection = new MySqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    string queryString = @"
+                SELECT *
+                FROM product 
+                WHERE id = @id";
+
+                    using (var command = new MySqlCommand(queryString, connection))
+                    {
+                        command.Parameters.AddWithValue("@id", id);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return new Product
+                                {
+                                    id = reader.GetInt32("id"),
+                                    name = reader.GetString("name"),
+                                    price = reader.GetDecimal("price"),
+                                    stock = reader.GetInt32("stock"),
+                                    description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+                                    productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
+                                    imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
+                                };
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("SELECT", $"Gagal mengambil produk dengan ID: {id}", ex);
+            }
+        }
+
+
+        public async Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId)
+        {
+            var products = new List<Product>();
+
+            try
+            {
+                using (var connection = new MySqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    string queryString = @"
+                SELECT * 
+                FROM product 
+                WHERE productTypeId = @productTypeId
+                ORDER BY name";
+
+                    using (var command = new MySqlCommand(queryString, connection))
+                    {
+                        command.Parameters.AddWithValue("@productTypeId", productTypeId);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                var product = new Product
+                                {
+                                    id = reader.GetInt32("id"),
+                                    name = reader.GetString("name"),
+                                    price = reader.GetDecimal("price"),
+                                    stock = reader.GetInt32("stock"),
+                                    description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+                                    productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
+                                    imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl")
+                                };
+
+                                products.Add(product);
+                            }
+                        }
+                    }
+                }
+
+                return products;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("SELECT", $"Gagal mengambil produk berdasarkan productTypeId: {productTypeId}", ex);
+            }
+        }
+
 
         public async Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null)
         {
             var products = new List<Product>();
 
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
-            var sql = @"
-        SELECT * 
-        FROM product
-        WHERE 1=1";
-
-            var parameters = new List<MySqlParameter>();
-
-            if (!string.IsNullOrEmpty(searchTerm))
+            try
             {
-                sql += " AND (name LIKE @searchTerm OR description LIKE @searchTerm)";
-                parameters.Add(new MySqlParameter("@searchTerm", $"%{searchTerm}%"));
-            }
+                using var connection = new MySqlConnection(_connectionString);
+                await connection.OpenAsync();
 
-            if (productTypeId.HasValue)
-            {
-                sql += " AND productTypeId = @productTypeId";
-                parameters.Add(new MySqlParameter("@productTypeId", productTypeId.Value));
-            }
+                var sql = @"
+            SELECT * 
+            FROM product
+            WHERE 1=1";
 
-            if (minPrice.HasValue)
-            {
-                sql += " AND price >= @minPrice";
-                parameters.Add(new MySqlParameter("@minPrice", minPrice.Value));
-            }
+                var parameters = new List<MySqlParameter>();
 
-            if (maxPrice.HasValue)
-            {
-                sql += " AND price <= @maxPrice";
-                parameters.Add(new MySqlParameter("@maxPrice", maxPrice.Value));
-            }
-
-            sql += " ORDER BY name";
-
-            using var command = new MySqlCommand(sql, connection);
-            command.Parameters.AddRange(parameters.ToArray());
-
-            using var reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                var product = new Product
+                if (!string.IsNullOrEmpty(searchTerm))
                 {
-                    id = reader.GetInt32("id"),
-                    name = reader.GetString("name"),
-                    price = reader.GetDecimal("price"),
-                    stock = reader.GetInt32("stock"),
-                    description = reader.IsDBNull("description") ? null : reader.GetString("description"),
-                    productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
-                    imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl")
-                };
+                    sql += " AND (name LIKE @searchTerm OR description LIKE @searchTerm)";
+                    parameters.Add(new MySqlParameter("@searchTerm", $"%{searchTerm}%"));
+                }
 
-                products.Add(product);
+                if (productTypeId.HasValue)
+                {
+                    sql += " AND productTypeId = @productTypeId";
+                    parameters.Add(new MySqlParameter("@productTypeId", productTypeId.Value));
+                }
+
+                if (minPrice.HasValue)
+                {
+                    sql += " AND price >= @minPrice";
+                    parameters.Add(new MySqlParameter("@minPrice", minPrice.Value));
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    sql += " AND price <= @maxPrice";
+                    parameters.Add(new MySqlParameter("@maxPrice", maxPrice.Value));
+                }
+
+                sql += " ORDER BY name";
+
+                using var command = new MySqlCommand(sql, connection);
+                command.Parameters.AddRange(parameters.ToArray());
+
+                using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var product = new Product
+                    {
+                        id = reader.GetInt32("id"),
+                        name = reader.GetString("name"),
+                        price = reader.GetDecimal("price"),
+                        stock = reader.GetInt32("stock"),
+                        description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+                        productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
+                        imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl")
+                    };
+
+                    products.Add(product);
+                }
+
+                return products;
             }
-
-            return products;
+            catch (Exception ex)
+            {
+                throw new DatabaseException("SELECT", "Gagal melakukan pencarian produk", ex);
+            }
         }
+
 
 
         public async Task<int> CreateProductAsync(Product product)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            try
             {
+                using var connection = new MySqlConnection(_connectionString);
                 await connection.OpenAsync();
 
-
-                // Query INSERT dengan LAST_INSERT_ID() untuk mendapatkan ID yang baru dibuat
-                // LAST_INSERT_ID() return ID terakhir yang di-insert dalam connection saat ini
                 string queryString = @"
-                    INSERT INTO product (name, price, stock, description, productTypeId, imageUrl)
-                    VALUES (@name, @price, @stock, @description, @productTypeId, @imageUrl);";
+            INSERT INTO product (name, price, stock, description, productTypeId, imageUrl)
+            VALUES (@name, @price, @stock, @description, @productTypeId, @imageUrl);
+            SELECT LAST_INSERT_ID();";
 
-                using (var command = new MySqlCommand(queryString, connection))
-                {
-                    command.Parameters.AddWithValue("@name", product.name);
-                    command.Parameters.AddWithValue("@price", product.price);
-                    command.Parameters.AddWithValue("@stock", product.stock);
-                    command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
-                    command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
+                using var command = new MySqlCommand(queryString, connection);
+                command.Parameters.AddWithValue("@name", product.name);
+                command.Parameters.AddWithValue("@price", product.price);
+                command.Parameters.AddWithValue("@stock", product.stock);
+                command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
+                command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
 
-
-                    var result = await command.ExecuteScalarAsync();
-
-                    return Convert.ToInt32(result);
-                }
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("INSERT", "Gagal membuat produk", ex);
             }
         }
+
         public async Task<bool> UpdateProductAsync(Product product)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            try
             {
-                await connection.OpenAsync();
-
-
-                string queryString = @"
-                    UPDATE product 
-                    SET name = @name, 
-                        price = @price, 
-                        stock = @stock, 
-                        description = @description,
-                        productTypeId = @productTypeId,
-                        imageUrl = @imageUrl
-                    WHERE id = @id";
-
-                using (var command = new MySqlCommand(queryString, connection))
+                using (var connection = new MySqlConnection(_connectionString))
                 {
-                    // Parameter untuk UPDATE (termasuk ProductID untuk WHERE clause)
-                    command.Parameters.AddWithValue("@id", product.id);
-                    command.Parameters.AddWithValue("@name", product.name);
-                    command.Parameters.AddWithValue("@price", product.price);
-                    command.Parameters.AddWithValue("@stock", product.stock);
-                    command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
-                    command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
+                    await connection.OpenAsync();
 
+                    string queryString = @"
+                UPDATE product 
+                SET name = @name, 
+                    price = @price, 
+                    stock = @stock, 
+                    description = @description,
+                    productTypeId = @productTypeId,
+                    imageUrl = @imageUrl
+                WHERE id = @id";
 
-                    // ExecuteNonQuery = untuk operasi yang tidak return data (INSERT, UPDATE, DELETE)
-                    // Return int = jumlah rows yang affected
-                    var rowsAffected = await command.ExecuteNonQueryAsync();
+                    using (var command = new MySqlCommand(queryString, connection))
+                    {
+                        command.Parameters.AddWithValue("@id", product.id);
+                        command.Parameters.AddWithValue("@name", product.name);
+                        command.Parameters.AddWithValue("@price", product.price);
+                        command.Parameters.AddWithValue("@stock", product.stock);
+                        command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
+                        command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
 
+                        var rowsAffected = await command.ExecuteNonQueryAsync();
 
-                    // Return true jika ada row yang ter-update (rowsAffected > 0)
-                    // Return false jika tidak ada row yang ter-update (kemungkinan ID tidak ditemukan)
-                    return rowsAffected > 0;
+                        return rowsAffected > 0;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("UPDATE", $"Gagal mengupdate produk dengan ID: {product.id}", ex);
             }
         }
 
@@ -364,28 +380,24 @@ namespace ProductApi.Data
         /// </summary>
         public async Task<bool> DeleteProductAsync(int id)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            try
             {
+                using var connection = new MySqlConnection(_connectionString);
                 await connection.OpenAsync();
 
-
-                // Query DELETE sederhana dengan WHERE clause
                 string queryString = "DELETE FROM product WHERE id = @id";
 
-                using (var command = new MySqlCommand(queryString, connection))
-                {
-                    // Parameter untuk WHERE clause
-                    command.Parameters.AddWithValue("@id", id);
+                using var command = new MySqlCommand(queryString, connection);
+                command.Parameters.AddWithValue("@id", id);
 
-                    // ExecuteNonQuery untuk operasi DELETE
-                    var rowsAffected = await command.ExecuteNonQueryAsync();
-
-
-                    // Return true jika ada row yang terhapus
-                    // Return false jika tidak ada row yang terhapus (ID tidak ditemukan)
-                    return rowsAffected > 0;
-                }
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("DELETE", $"Gagal menghapus produk dengan ID {id}", ex);
             }
         }
+
     }
 }
