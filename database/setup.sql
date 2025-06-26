@@ -56,14 +56,15 @@ CREATE TABLE product (
     `name` VARCHAR(100) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     stock INT NOT NULL,
-    `description` TEXT,,
+    `description` TEXT,
     imageUrl TEXT,
     productTypeId INT,
     FOREIGN KEY (productTypeId) REFERENCES productType(id)
 );
 
 INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId) VALUES
-('Kijang Innova', 700000, 100, 'Course SUV Kijang Innova','https://imgcdn.oto.com/large/gallery/exterior/38/1240/toyota-kijang-innova-front-angle-low-view-351782.jpg' ,1);
+('Kijang Innova', 700000, 100, 'Course SUV Kijang Innova','https://imgcdn.oto.com/large/gallery/exterior/38/1240/toyota-kijang-innova-front-angle-low-view-351782.jpg' ,1),
+('Toyota Avanza', 600000, 50, 'LCGC murah dan irit', 'https://medias.auto2000.co.id/sys-master-hybrismedia/h47/h72/8831557730334/avanza-g-puplish_optimized.png', 2);;
 
 
 -- =====================
