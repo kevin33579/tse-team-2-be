@@ -16,12 +16,5 @@ namespace UserApi.Models
         public int RoleID { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
-
-
-
-
-
-
-
     }
 }
