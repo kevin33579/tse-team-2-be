@@ -94,6 +94,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 // UseHttpsRedirection() = middleware untuk redirect HTTP ke HTTPS
 // Security best practice - semua request akan di-redirect ke HTTPS
 app.UseHttpsRedirection();
