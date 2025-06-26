@@ -9,6 +9,8 @@ namespace ProductApi.Data
         Task<List<Product>> GetAllProductsAsync();                                          // READ - Get all
         Task<Product?> GetProductByIdAsync(int id);                                        // READ - Get by ID  
         Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId);                  // READ - Get by ProductType ID
+        Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
+
         Task<int> CreateProductAsync(Product product);                                     // CREATE - Return new ID
         Task<bool> UpdateProductAsync(Product product);                                    // UPDATE - Return success status
         Task<bool> DeleteProductAsync(int id);
@@ -221,6 +223,70 @@ namespace ProductApi.Data
 
             return products;
         }
+
+        public async Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null)
+        {
+            var products = new List<Product>();
+
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var sql = @"
+        SELECT * 
+        FROM product
+        WHERE 1=1";
+
+            var parameters = new List<MySqlParameter>();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                sql += " AND (name LIKE @searchTerm OR description LIKE @searchTerm)";
+                parameters.Add(new MySqlParameter("@searchTerm", $"%{searchTerm}%"));
+            }
+
+            if (productTypeId.HasValue)
+            {
+                sql += " AND productTypeId = @productTypeId";
+                parameters.Add(new MySqlParameter("@productTypeId", productTypeId.Value));
+            }
+
+            if (minPrice.HasValue)
+            {
+                sql += " AND price >= @minPrice";
+                parameters.Add(new MySqlParameter("@minPrice", minPrice.Value));
+            }
+
+            if (maxPrice.HasValue)
+            {
+                sql += " AND price <= @maxPrice";
+                parameters.Add(new MySqlParameter("@maxPrice", maxPrice.Value));
+            }
+
+            sql += " ORDER BY name";
+
+            using var command = new MySqlCommand(sql, connection);
+            command.Parameters.AddRange(parameters.ToArray());
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var product = new Product
+                {
+                    id = reader.GetInt32("id"),
+                    name = reader.GetString("name"),
+                    price = reader.GetDecimal("price"),
+                    stock = reader.GetInt32("stock"),
+                    description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+                    productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
+                    imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl")
+                };
+
+                products.Add(product);
+            }
+
+            return products;
+        }
+
 
         public async Task<int> CreateProductAsync(Product product)
         {
