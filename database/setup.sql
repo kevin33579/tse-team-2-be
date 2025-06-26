@@ -41,6 +41,10 @@ CREATE TABLE productType (
     `description` TEXT
 );
 
+ALTER TABLE productType         
+ADD COLUMN imageUrl TEXT ;   
+
+
 INSERT INTO productType (name, description)
 VALUES
   ('SUV', 'Sport Utility Vehicle, designed for both on-road and off-road use'),
@@ -61,6 +65,9 @@ CREATE TABLE product (
     productTypeId INT,
     FOREIGN KEY (productTypeId) REFERENCES productType(id)
 );
+
+ALTER TABLE product          
+ADD COLUMN imageUrl TEXT ;   
 
 INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId) VALUES
 ('Kijang Innova', 700000, 100, 'Course SUV Kijang Innova','https://imgcdn.oto.com/large/gallery/exterior/38/1240/toyota-kijang-innova-front-angle-low-view-351782.jpg' ,1),
