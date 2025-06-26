@@ -4,6 +4,7 @@
 
 # Build results
 <<<<<<< HEAD
+<<<<<<< HEAD
 bin/
 obj/
 out/
@@ -349,6 +350,8 @@ uploads/
 # - Database migration files
 # - Static assets (CSS, JS, images dalam wwwroot)
 =======
+=======
+>>>>>>> 1b97081 (add git ignore)
 /bin/
 /obj/
 .DS_Store
@@ -356,4 +359,11 @@ uploads/
 *.dll
 /net9.0/
 /net9.0/net9.0/
+<<<<<<< HEAD
 >>>>>>> 1e033e4 (Remove obj/ and .DS_Store from Git tracking)
+=======
+=======
+bin/
+obj/
+>>>>>>> 80da66b (add git ignore)
+>>>>>>> 1b97081 (add git ignore)
