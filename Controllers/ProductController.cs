@@ -39,11 +39,11 @@ namespace ProductApi.Controllers
             {
                 // Log informasi bahwa method ini dipanggil
                 _logger.LogInformation("Mengambil semua produk");
-                
+
                 // Panggil repository untuk mengambil semua produk dari database
                 // await = tunggu sampai operasi async selesai
                 var products = await _productRepository.GetAllProductsAsync();
-                
+
                 // Return HTTP 200 OK dengan data products
                 return Ok(products);
             }
@@ -51,7 +51,7 @@ namespace ProductApi.Controllers
             {
                 // Log error dengan detail exception
                 _logger.LogError(ex, "Error saat mengambil produk");
-                
+
                 // Return HTTP 500 Internal Server Error
                 return StatusCode(500, "Terjadi kesalahan server");
             }
@@ -70,14 +70,14 @@ namespace ProductApi.Controllers
             {
                 // Panggil repository untuk mencari produk berdasarkan ID
                 var product = await _productRepository.GetProductByIdAsync(id);
-                
+
                 // Cek apakah produk ditemukan
                 if (product == null)
                 {
                     // Return HTTP 404 Not Found jika produk tidak ada
                     return NotFound($"Produk dengan ID {id} tidak ditemukan");
                 }
-                
+
                 // Return HTTP 200 OK dengan data produk
                 return Ok(product);
             }
@@ -89,11 +89,27 @@ namespace ProductApi.Controllers
             }
         }
 
+        [HttpGet("type/{productTypeId}")]
+        public async Task<ActionResult<List<Product>>> GetProductsByTypeId(int productTypeId)
+        {
+            try
+            {
+                var products = await _productRepository.GetProductsByTypeIdAsync(productTypeId);
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil produk dengan ProductTypeId {ProductTypeId}", productTypeId);
+                return StatusCode(500, "Terjadi kesalahan server");
+            }
+        }
+
+
         // =====================================
         // GET: api/products/price-range?minPrice=10&maxPrice=100
         // =====================================
         // URL dengan query parameters, contoh: /api/products/price-range?minPrice=100000&maxPrice=1000000
-        
+
         // [FromQuery] - Parameter diambil dari query string UR
 
         // =====================================
@@ -113,14 +129,14 @@ namespace ProductApi.Controllers
                     // Return HTTP 400 Bad Request dengan detail error validasi
                     return BadRequest(ModelState);
                 }
-                
+
                 // Panggil repository untuk menyimpan produk baru ke database
                 // Repository akan return ID produk yang baru dibuat
                 var productId = await _productRepository.CreateProductAsync(product);
-                
+
                 // Set ID produk dengan ID yang baru dibuat
                 product.id = productId;
-                
+
                 // CreatedAtAction - Return HTTP 201 Created
                 // Parameter: nama action untuk GET by ID, route values, object yang dibuat
                 // Header Location akan berisi URL untuk mengakses produk yang baru dibuat
@@ -150,13 +166,13 @@ namespace ProductApi.Controllers
                 {
                     return BadRequest("ID produk tidak sesuai");
                 }
-                
+
                 // Cek validasi model
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                
+
                 // Cek apakah produk yang akan diupdate ada di database
                 var existingProduct = await _productRepository.GetProductByIdAsync(id);
                 if (existingProduct == null)
@@ -164,17 +180,17 @@ namespace ProductApi.Controllers
                     // Return HTTP 404 jika produk tidak ditemukan
                     return NotFound($"Produk dengan ID {id} tidak ditemukan");
                 }
-                
+
                 // Panggil repository untuk update produk
                 var success = await _productRepository.UpdateProductAsync(product);
-                
+
                 if (success)
                 {
                     // Return HTTP 204 No Content jika update berhasil
                     // No Content = operasi berhasil tapi tidak return data
                     return NoContent();
                 }
-                
+
                 // Return HTTP 500 jika update gagal di database
                 return StatusCode(500, "Gagal mengupdate produk");
             }
@@ -202,16 +218,16 @@ namespace ProductApi.Controllers
                     // Return HTTP 404 jika produk tidak ditemukan
                     return NotFound($"Produk dengan ID {id} tidak ditemukan");
                 }
-                
+
                 // Panggil repository untuk menghapus produk dari database
                 var success = await _productRepository.DeleteProductAsync(id);
-                
+
                 if (success)
                 {
                     // Return HTTP 204 No Content jika delete berhasil
                     return NoContent();
                 }
-                
+
                 // Return HTTP 500 jika delete gagal di database
                 return StatusCode(500, "Gagal menghapus produk");
             }
