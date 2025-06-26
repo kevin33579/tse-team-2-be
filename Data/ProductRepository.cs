@@ -8,6 +8,7 @@ namespace ProductApi.Data
     {
         Task<List<Product>> GetAllProductsAsync();                                          // READ - Get all
         Task<Product?> GetProductByIdAsync(int id);                                        // READ - Get by ID  
+        Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId);                  // READ - Get by ProductType ID
         Task<int> CreateProductAsync(Product product);                                     // CREATE - Return new ID
         Task<bool> UpdateProductAsync(Product product);                                    // UPDATE - Return success status
         Task<bool> DeleteProductAsync(int id);
@@ -123,7 +124,8 @@ namespace ProductApi.Data
                                     price = reader.GetDecimal("price"),
                                     stock = reader.GetInt32("stock"),
                                     description = reader.IsDBNull("description") ? null : reader.GetString("description"),
-                                    productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId")
+                                    productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
+                                    imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
                                 };
 
                                 products.Add(product);
@@ -167,7 +169,8 @@ namespace ProductApi.Data
                                 price = reader.GetDecimal("price"),
                                 stock = reader.GetInt32("stock"),
                                 description = reader.IsDBNull("description") ? null : reader.GetString("description"),
-                                productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId")
+                                productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
+                                imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
 
                             };
                         }
@@ -177,6 +180,48 @@ namespace ProductApi.Data
 
             return null;
         }
+
+        public async Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId)
+        {
+            var products = new List<Product>();
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string queryString = @"
+                        SELECT * 
+                        FROM product 
+                        WHERE productTypeId = @productTypeId
+                        ORDER BY name";
+
+                using (var command = new MySqlCommand(queryString, connection))
+                {
+                    command.Parameters.AddWithValue("@productTypeId", productTypeId);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var product = new Product
+                            {
+                                id = reader.GetInt32("id"),
+                                name = reader.GetString("name"),
+                                price = reader.GetDecimal("price"),
+                                stock = reader.GetInt32("stock"),
+                                description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+                                productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
+                                imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl")
+                            };
+
+                            products.Add(product);
+                        }
+                    }
+                }
+            }
+
+            return products;
+        }
+
         public async Task<int> CreateProductAsync(Product product)
         {
             using (var connection = new MySqlConnection(_connectionString))
@@ -187,9 +232,8 @@ namespace ProductApi.Data
                 // Query INSERT dengan LAST_INSERT_ID() untuk mendapatkan ID yang baru dibuat
                 // LAST_INSERT_ID() return ID terakhir yang di-insert dalam connection saat ini
                 string queryString = @"
-                    INSERT INTO product (name, price, stock, description, productTypeId)
-                    VALUES (@name, @price, @stock, @description, @productTypeId);
-                    SELECT LAST_INSERT_ID();";
+                    INSERT INTO product (name, price, stock, description, productTypeId, imageUrl)
+                    VALUES (@name, @price, @stock, @description, @productTypeId, @imageUrl);";
 
                 using (var command = new MySqlCommand(queryString, connection))
                 {
@@ -198,6 +242,8 @@ namespace ProductApi.Data
                     command.Parameters.AddWithValue("@stock", product.stock);
                     command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
+                    command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
+
 
                     var result = await command.ExecuteScalarAsync();
 
@@ -218,7 +264,8 @@ namespace ProductApi.Data
                         price = @price, 
                         stock = @stock, 
                         description = @description,
-                        productTypeId = @productTypeId
+                        productTypeId = @productTypeId,
+                        imageUrl = @imageUrl
                     WHERE id = @id";
 
                 using (var command = new MySqlCommand(queryString, connection))
@@ -230,6 +277,8 @@ namespace ProductApi.Data
                     command.Parameters.AddWithValue("@stock", product.stock);
                     command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
+                    command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
+
 
                     // ExecuteNonQuery = untuk operasi yang tidak return data (INSERT, UPDATE, DELETE)
                     // Return int = jumlah rows yang affected

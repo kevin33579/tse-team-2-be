@@ -56,13 +56,14 @@ CREATE TABLE product (
     `name` VARCHAR(100) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     stock INT NOT NULL,
-    `description` TEXT,
+    `description` TEXT,,
+    imageUrl TEXT,
     productTypeId INT,
     FOREIGN KEY (productTypeId) REFERENCES productType(id)
 );
 
-INSERT INTO product (`name`, price, stock, `description`, productTypeId) VALUES
-('Kijang Innova', 700000, 100, 'Course SUV Kijang Innova', 1);
+INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId) VALUES
+('Kijang Innova', 700000, 100, 'Course SUV Kijang Innova','https://imgcdn.oto.com/large/gallery/exterior/38/1240/toyota-kijang-innova-front-angle-low-view-351782.jpg' ,1);
 
 
 -- =====================
