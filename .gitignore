@@ -3,6 +3,7 @@
 # ===========================================
 
 # Build results
+<<<<<<< HEAD
 bin/
 obj/
 out/
@@ -347,3 +348,12 @@ uploads/
 # - Docker files (Dockerfile, docker-compose.yml)
 # - Database migration files
 # - Static assets (CSS, JS, images dalam wwwroot)
+=======
+/bin/
+/obj/
+.DS_Store
+*.pdb
+*.dll
+/net9.0/
+/net9.0/net9.0/
+>>>>>>> 1e033e4 (Remove obj/ and .DS_Store from Git tracking)
