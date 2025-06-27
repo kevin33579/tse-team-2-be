@@ -10,8 +10,8 @@ namespace ProductTypeApi.Data
     public interface IProductTypeRepository
     {
         Task<List<ProductType>> GetAllProductTypesAsync();
-        Task<int>  CreateProductTypeAsync(ProductType productType);   // returns new Id
-        
+        Task<int> CreateProductTypeAsync(ProductType productType);   // returns new Id
+
         Task<bool> UpdateProductTypeAsync(ProductType productType);   // true = success
         Task<bool> DeleteProductTypeAsync(int id);                    // true = success
     }
@@ -39,19 +39,20 @@ namespace ProductTypeApi.Data
             await using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            const string sql = @"SELECT id, name, description
+            const string sql = @"SELECT *
                                  FROM ProductType;";
 
-            await using var cmd  = new MySqlCommand(sql, connection);
+            await using var cmd = new MySqlCommand(sql, connection);
             await using var rdr = await cmd.ExecuteReaderAsync();
 
             while (await rdr.ReadAsync())
             {
                 productTypes.Add(new ProductType
                 {
-                    Id          = rdr.GetInt32("id"),
-                    Name        = rdr.GetString("name"),
+                    Id = rdr.GetInt32("id"),
+                    Name = rdr.GetString("name"),
                     Description = rdr.IsDBNull("description") ? null : rdr.GetString("description"),
+                    ImageUrl = rdr.GetString("imageUrl"),
                 });
             }
             return productTypes;
@@ -71,7 +72,7 @@ namespace ProductTypeApi.Data
                 SELECT LAST_INSERT_ID();";
 
             await using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@name",        productType.Name);
+            cmd.Parameters.AddWithValue("@name", productType.Name);
             cmd.Parameters.AddWithValue("@description", (object?)productType.Description ?? DBNull.Value);
 
             var newId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
@@ -93,9 +94,9 @@ namespace ProductTypeApi.Data
                 WHERE id = @id;";
 
             await using var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@name",        productType.Name);
+            cmd.Parameters.AddWithValue("@name", productType.Name);
             cmd.Parameters.AddWithValue("@description", (object?)productType.Description ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@id",          productType.Id);
+            cmd.Parameters.AddWithValue("@id", productType.Id);
 
             var rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;                            // true if something was updated
