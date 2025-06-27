@@ -89,31 +89,34 @@ INSERT INTO schedule (time) VALUES
 -- =====================
 -- TABEL: cart
 -- =====================
-CREATE TABLE carts (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_checked_out BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+CREATE TABLE `carts` (
+    `id`          INT NOT NULL AUTO_INCREMENT,
+    `user_id`     INT NOT NULL,
+    `product_id`  INT NOT NULL,
+    `schedule_id` INT NULL,
+    `quantity`    INT NOT NULL DEFAULT 1,
+
+    PRIMARY KEY (`id`),
+
+    CONSTRAINT `fk_carts_users`
+        FOREIGN KEY (`user_id`)    REFERENCES `users` (`id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT `fk_carts_products`
+        FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT `fk_carts_schedules`
+        FOREIGN KEY (`schedule_id`) REFERENCES `schedule` (`id`)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
 );
 
-
-
--- =====================
--- TABEL: cart items
--- =====================
-
-CREATE TABLE cart_items (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    cart_id INT NOT NULL,
-    product_id INT NOT NULL,
-    schedule_id INT,
-    quantity INT ,
-
-    FOREIGN KEY (cart_id) REFERENCES carts(id),
-    FOREIGN KEY (product_id) REFERENCES product(id),
-    FOREIGN KEY (schedule_id) REFERENCES schedule(id)
-);
+INSERT INTO carts (user_id, product_id, schedule_id, quantity)
+VALUES
+  (1, 1, 1, 2);
 
 -- =====================
 -- TABEL: Orders

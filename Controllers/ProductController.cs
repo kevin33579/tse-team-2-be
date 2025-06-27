@@ -3,6 +3,7 @@ using ProductApi.Data;
 using ProductApi.Models;
 using Microsoft.Extensions.Logging;
 
+
 namespace ProductApi.Controllers
 {
     [ApiController]

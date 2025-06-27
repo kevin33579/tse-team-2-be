@@ -2,26 +2,26 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+
 namespace CartApi.Models
 {
     [Table("carts")]
     public class Cart
     {
+        // ---------- Columns ----------
         [Key]
-        public int Id { get; set; }                 // maps to id INT PRIMARY KEY AUTO_INCREMENT
+        public uint Id { get; set; }  // INT UNSIGNED AUTO_INCREMENT
 
-        public int UserId { get; set; }             // maps to user_id INT (FK)
+        public uint UserId { get; set; }
 
-        public DateTime CreatedAt { get; set; }     // maps to created_at DATETIME
-                                                   // EF will respect DB default, but you can add:
-                                                   // = DateTime.UtcNow;
+        public uint ProductId { get; set; }
 
-        public bool IsCheckedOut { get; set; }      // maps to is_checked_out BOOLEAN
-                                                   // default FALSE is handled by DB
-        
-        // ---- optional navigation properties ----
-        // public User User { get; set; }            // if you have a User entity
-        // public ICollection<CartItem> CartItems { get; set; }
-        // public Order Order { get; set; }          // if one-to-one with Orders
+        public uint? ScheduleId { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int Quantity { get; set; } = 1;
+
     }
+
+
 }

@@ -95,6 +95,16 @@ namespace ProductApi.Models
                 StatusCode = statusCode
             };
         }
+
+        public static ApiResult<T> ErrorResult<T>(IEnumerable<string> errors, int statusCode)
+    => new ApiResult<T>
+    {
+        Success = false,
+        StatusCode = statusCode,
+        Message = "Validation failed",
+        Errors = errors.ToList()
+    };
+
     }
 
     // Paginated result wrapper
@@ -111,7 +121,7 @@ namespace ProductApi.Models
         public static PaginatedResult<T> Create(List<T> data, int pageNumber, int pageSize, int totalRecords)
         {
             var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
-            
+
             return new PaginatedResult<T>
             {
                 Data = data,
