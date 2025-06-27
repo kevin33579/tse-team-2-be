@@ -3,11 +3,12 @@ using MySql.Data.MySqlClient; // MySqlConnection, MySqlCommand, MySqlDataAdapter
 using ProductApi.Models; // Product
 using ProductApi.Exceptions;
 
+
 namespace ProductApi.Data
 {
     public interface IProductRepository
     {
-        Task<List<Product>> GetAllProductsAsync();                                          // READ - Get all
+        Task<List<ProductDto>> GetAllProductsAsync();                                          // READ - Get all
         Task<Product?> GetProductByIdAsync(int id);                                        // READ - Get by ID  
         Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId);                  // READ - Get by ProductType ID
         Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
@@ -27,96 +28,34 @@ namespace ProductApi.Data
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
 
-        // public async Task<List<Product>> GetAllProductsAsync()
-        // {
-        //     var products = new List<Product>();
-
-        //     using (var connection = new MySqlConnection(_connectionString))
-        //     {
-        //         await connection.OpenAsync();
-        //         string queryString = @"
-        //             SELECT * 
-        //             FROM product 
-        //             ORDER BY name";
-        //         using (var command = new MySqlCommand(queryString, connection))
-        //         {
-        //             using (var reader = await command.ExecuteReaderAsync())
-        //             {
-        //                 while (await reader.ReadAsync())
-        //                 {
-        //                     var product = new Product
-        //                     {
-        //                         id = reader.GetInt32("id"),
-        //                         name = reader.GetString("name"),
-        //                         price = reader.GetDecimal("price"),
-        //                         stock = reader.GetInt32("stock"),
-        //                         description = reader.IsDBNull("description") ? null : reader.GetString("description"),
-        //                         productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId")
-
-        //                     };
-
-        //                     // Tambahkan product ke list
-        //                     products.Add(product);
-        //                 }
-        //             }
-        //         }
-        //     }
-
-        //     return products;
-        // }
-        // public async Task<List<Product>> GetAllProductsAsync()
-        // {
-        //     var products = new List<Product>();
-
-        //     using (var connection = new MySqlConnection(_connectionString))
-        //     {
-        //         await connection.OpenAsync();
-        //         string queryString = @"
-        //             SELECT * 
-        //             FROM product 
-        //             ORDER BY name";
-        //         using (var command = new MySqlCommand(queryString, connection))
-        //         {
-        //             using (var reader = await command.ExecuteReaderAsync())
-        //             {
-        //                 while (await reader.ReadAsync())
-        //                 {
-        //                     var product = new Product
-        //                     {
-        //                         id = reader.GetInt32("id"),
-        //                         name = reader.GetString("name"),
-        //                         price = reader.GetDecimal("price"),
-        //                         stock = reader.GetInt32("stock"),
-        //                         description = reader.IsDBNull("description") ? null : reader.GetString("description"),
-        //                         productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId")
-
-        //                     };
-
-        //                     // Tambahkan product ke list
-        //                     products.Add(product);
-        //                 }
-        //             }
-        //         }
-        //     }
-
-        //     return products;
-        // }
-        public async Task<List<Product>> GetAllProductsAsync()
+        public async Task<List<ProductDto>> GetAllProductsAsync()
         {
-            var products = new List<Product>();
+            var products = new List<ProductDto>();
 
             try
             {
                 using (var connection = new MySqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
-                    string queryString = @"SELECT * FROM product ORDER BY name";
+                    string queryString = @"
+        SELECT  p.id,
+                p.name,
+                p.price,
+                p.stock,
+                p.description,
+                p.imageUrl,
+                p.productTypeId,
+                pt.name AS productTypeName          -- ① alias persis!
+        FROM    product p
+        LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
+               ON pt.id = p.productTypeId
+        ORDER BY p.name;";
                     using (var command = new MySqlCommand(queryString, connection))
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
                         {
-                            var product = new Product
+                            var product = new ProductDto
                             {
                                 id = reader.GetInt32("id"),
                                 name = reader.GetString("name"),
@@ -124,7 +63,8 @@ namespace ProductApi.Data
                                 stock = reader.GetInt32("stock"),
                                 description = reader.IsDBNull("description") ? null : reader.GetString("description"),
                                 productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
-                                imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl")
+                                imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
+                                productTypeName = reader.GetString("productTypeName")
                             };
                             products.Add(product);
                         }

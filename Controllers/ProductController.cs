@@ -26,7 +26,7 @@ namespace ProductApi.Controllers
             {
                 _logger.LogInformation("Mengambil semua produk");
                 var products = await _productRepository.GetAllProductsAsync();
-                return Ok(ApiResult<List<Product>>.SuccessResult(products, "Produk berhasil diambil"));
+                return Ok(ApiResult<List<ProductDto>>.SuccessResult(products, "Produk berhasil diambil"));
             }
             catch (Exception ex)
             {
