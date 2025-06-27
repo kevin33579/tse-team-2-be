@@ -45,6 +45,28 @@ CREATE TABLE product_type (
 ALTER TABLE productType         
 ADD COLUMN imageUrl TEXT ;   
 
+-- SUV
+UPDATE productType
+SET imageUrl = 'https://carsgallery.co.id/blog/wp-content/uploads/2024/11/contoh-mobil-mpv-dan-suv-3.jpg' where id = 1;
+
+
+UPDATE productType
+SET imageUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQV5ELO-WDCwibgDdewXKgtrNCN2BdvI3MmzQ&s' where id = 2;
+
+
+UPDATE productType
+SET imageUrl = 'https://s3.ap-southeast-1.amazonaws.com/img.jba.co.id//wysiwyg/ckeditor/20241201221025cover372D4LCX.webp' where id = 3;
+
+
+UPDATE productType
+SET imageUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYD5UL1GXpvNSYNEcIHC5--qpwVN6MolRg8A&s' where id = 4;
+
+
+--select
+
+select * from productType
+select * from product
+
 
 INSERT INTO productType (name, description)
 =======
@@ -55,6 +77,13 @@ VALUES
   ('LCGC', 'Low Cost Green Car, fuel-efficient and affordable vehicle'),
   ('Sedan', 'Passenger car with a three-box configuration'),
   ('Truck', 'Motor vehicle designed to transport cargo');
+
+  INSERT INTO productType (name, description, imageUrl )
+VALUES
+  ('Hatchback', 'a car body style that typically features a rear door that opens upwards, combining the passenger and cargo areas into a single compartment','https://hips.hearstapps.com/hmg-prod/images/2023-lightning-lap-volkswagen-golf-gti-mu-105-1675446169.jpg?crop=0.629xw:0.630xh;0.121xw,0.199xh&resize=980:*'),
+  ('MPV', 'a car designed to maximize passenger capacity and comfort, making it ideal for families or groups','https://www.gardaoto.com/wp-content/uploads/2023/04/Screenshot-2023-04-27-105141.png'),
+  ('Electric', 'a vehicle that is propelled by one or more electric motors, powered by rechargeable batteries','https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRa0lzeM2DGdIdz5kokeBShM9j25l0znUVpiw&s'),
+  ('Offroad', 'a motorized vehicle designed to travel over rough, uneven, or unpaved terrain, including dirt, gravel, mud, snow, and other challenging surfaces','https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPwAPvIkvJqNXBNZhaB9CoNZNZ8Lb0Nehi9Q&s');
 
 -- =====================
 -- TABEL: product
