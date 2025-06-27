@@ -28,11 +28,13 @@ using UserApi.Data;
 using ProductApi.Data;
 using ProductTypeApi.Data;
 using ScheduleApi.Data;
-using CartItemApi.Data;
+using tse_backend.Models;
 using CartApi.Data;
+
 
 using ProductApi.Configuration;
 using ProductApi.Middleware;
+using CartApi.Models;
 
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
@@ -76,8 +78,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
-builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+
 
 
 // =====================================

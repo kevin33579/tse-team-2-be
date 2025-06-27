@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CartApi.Data;
 using CartApi.Models;
@@ -6,43 +7,69 @@ using CartApi.Models;
 namespace CartApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]          // → /api/carts
-    public class CartsController : ControllerBase
+    [Route("api/[controller]")]
+    public class CartController : ControllerBase
     {
-        private readonly ICartRepository _repo;
+        private readonly ICartRepository _cartRepository;
 
-        public CartsController(ICartRepository repo)
+        public CartController(ICartRepository cartRepository)
         {
-            _repo = repo;
+            _cartRepository = cartRepository;
         }
 
-        /// <summary>
-        /// Create a new cart.
-        /// </summary>
-        /// <remarks>
-        /// Example request:
-        /// {
-        ///   "userId":  7,
-        ///   "isCheckedOut": false
-        /// }
-        /// </remarks>
-        /// <returns>201 Created with the new cart in the body.</returns>
+        // GET: api/cart/user/1
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<Cart>>> GetCartsByUser(uint userId)
+        {
+            var carts = await _cartRepository.GetCartsByUserAsync(userId);
+
+            if (carts == null || carts.Count == 0)
+            {
+                return NotFound($"No cart items found for user with ID {userId}.");
+            }
+
+            return Ok(carts);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Cart>> GetCartById(uint id)
+        {
+            var list = await _cartRepository.GetCartsByUserAsync( /* hack:  we only have GetByUser  */
+                userId: 0,                                          /*        so this just demo-stub */
+                HttpContext.RequestAborted);
+
+            var cart = list.Find(c => c.Id == id);
+            if (cart == null)
+                return NotFound();
+
+            return Ok(cart);
+        }
+
         [HttpPost]
-        public async Task<ActionResult<Cart>> CreateAsync([FromBody] Cart cart)
+        public async Task<ActionResult<Cart>> CreateCart([FromBody] Cart cart)
         {
-            if (cart is null) return BadRequest();
-            if (cart.UserId <= 0) return BadRequest("UserId must be positive.");
+            // Basic model validation
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            int newId = await _repo.CreateAsync(cart);
-            cart.Id = newId;                  // reflect DB-generated Id
+            // Insert row and fetch new auto-increment id
+            uint newId = await _cartRepository.CreateCartAsync(cart, HttpContext.RequestAborted);
+            cart.Id = newId;
 
-            // 201 Created + Location header (no GET route yet ⇒ routeName = null)
-            return CreatedAtRoute(
-                routeName: null,
-                routeValues: new { id = newId },
-                value: cart);
+            // Return 201 Created with Location header
+            return CreatedAtAction(
+                nameof(GetCartById),
+                new { id = newId },
+                cart);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCart(uint id)
+        {
+            bool removed = await _cartRepository.DeleteCartAsync(id, HttpContext.RequestAborted);
 
+            return removed ? NoContent()                          // 204
+                           : NotFound($"Cart item {id} not found"); // 404
+        }
     }
 }

@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace OrderApi.Models
+namespace tse_backend.Models
 {
     public enum OrderStatus
     {
@@ -21,14 +21,14 @@ namespace OrderApi.Models
         public int CartId { get; set; }              // cart_id INT (FK → carts.id)
 
         public DateTime OrderDate { get; set; }      // order_date DATETIME
-                                                    // DB default handles value; optionally:
-                                                    // = DateTime.UtcNow;
+                                                     // DB default handles value; optionally:
+                                                     // = DateTime.UtcNow;
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal TotalAmount { get; set; }     // total_amount DECIMAL(10,2)
 
         public OrderStatus Status { get; set; }      // status ENUM('PENDING','PAID','CANCELLED')
-                                                    // defaults to PENDING via DB
+                                                     // defaults to PENDING via DB
 
         /* ---- optional navigation properties ----
         public User User { get; set; }
