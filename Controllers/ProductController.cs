@@ -55,17 +55,32 @@ namespace ProductApi.Controllers
         }
 
         [HttpGet("type/{productTypeId}")]
-        public async Task<ActionResult<ApiResult<List<Product>>>> GetProductsByTypeId(int productTypeId)
+        public async Task<ActionResult<ApiResult<List<ProductDto>>>> GetProductsByTypeId(int productTypeId)
         {
             try
             {
                 var products = await _productRepository.GetProductsByTypeIdAsync(productTypeId);
-                return Ok(ApiResult<List<Product>>.SuccessResult(products, "Produk berdasarkan tipe berhasil diambil"));
+
+                // map the domain model → DTO
+                var dto = products.Select(p => new ProductDto
+                {
+                    id = p.id,
+                    productTypeId = p.productTypeId,
+                    name = p.name,
+                    price = p.price,
+                    stock = p.stock,
+                    description = p.description,
+                    imageUrl = p.imageUrl,
+                    productTypeName = p.productTypeName   // make sure this exists in the query
+                }).ToList();
+
+                return Ok(ApiResult<List<ProductDto>>.SuccessResult(dto,
+                        "Produk berdasarkan tipe berhasil diambil"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil produk dengan ProductTypeId {ProductTypeId}", productTypeId);
-                return StatusCode(500, ApiResult<List<Product>>.ErrorResult("Terjadi kesalahan server", 500));
+                return StatusCode(500, ApiResult<List<ProductDto>>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
 

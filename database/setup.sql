@@ -98,7 +98,7 @@ INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId
 ('Toyota Avanza', 600000, 50, 'LCGC murah dan irit', 'https://medias.auto2000.co.id/sys-master-hybrismedia/h47/h72/8831557730334/avanza-g-puplish_optimized.png', 2),
 ('Honda Brio', 300000, 50, 'Course Honda Brio', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaZwfpwxblQIHqRAerXMqA9Dfi36spg3EOVQ&s', 2),
 ('Sedan Honda Civic', 400000, 50, 'Course Sedan Civic', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSE16WKNdc2PArY9ZSP8_LMCPRs2BTOIAa19Q&s', 3),
-('Dump Truck For Mining ', 1200000, 50, 'Course Sedan Civic', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzW_itCRPNS_jO451fKKBHbBYZ6_XAv4e1KA&s', 3);
+('Dump Truck For Mining ', 1200000, 50, 'Course Dump Truck For Mining', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzW_itCRPNS_jO451fKKBHbBYZ6_XAv4e1KA&s', 4);
 
 
 -- select
