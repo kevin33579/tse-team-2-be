@@ -144,10 +144,18 @@ namespace ProductApi.Data
                 {
                     await connection.OpenAsync();
                     string queryString = @"
-                SELECT * 
-                FROM product 
-                WHERE productTypeId = @productTypeId
-                ORDER BY name";
+                SELECT  p.id,
+                p.name,
+                p.price,
+                p.stock,
+                p.description,
+                p.imageUrl,
+                p.productTypeId,
+                pt.name AS productTypeName          -- ① alias persis!
+        FROM    product p
+        LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
+               ON pt.id = p.productTypeId
+                WHERE pt.id = @productTypeId"; ;
 
                     using (var command = new MySqlCommand(queryString, connection))
                     {
@@ -165,7 +173,7 @@ namespace ProductApi.Data
                                     stock = reader.GetInt32("stock"),
                                     description = reader.IsDBNull("description") ? null : reader.GetString("description"),
                                     productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
-                                    imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl")
+                                    imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
                                 };
 
                                 products.Add(product);
