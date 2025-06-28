@@ -36,16 +36,16 @@ namespace ProductApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResult<Product>>> GetProduct(int id)
+        public async Task<ActionResult<ApiResult<ProductDto>>> GetProduct(int id)
         {
             try
             {
                 var product = await _productRepository.GetProductByIdAsync(id);
 
                 if (product == null)
-                    return NotFound(ApiResult<Product>.ErrorResult($"Produk dengan ID {id} tidak ditemukan", 404));
+                    return NotFound(ApiResult<ProductDto>.ErrorResult($"Produk dengan ID {id} tidak ditemukan", 404));
 
-                return Ok(ApiResult<Product>.SuccessResult(product, "Produk ditemukan"));
+                return Ok(ApiResult<ProductDto>.SuccessResult(product, "Produk ditemukan"));
             }
             catch (Exception ex)
             {

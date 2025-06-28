@@ -9,7 +9,7 @@ namespace ProductApi.Data
     public interface IProductRepository
     {
         Task<List<ProductDto>> GetAllProductsAsync();                                          // READ - Get all
-        Task<Product?> GetProductByIdAsync(int id);                                        // READ - Get by ID  
+        Task<ProductDto?> GetProductByIdAsync(int id);                                        // READ - Get by ID  
         Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId);                  // READ - Get by ProductType ID
         Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
 
@@ -79,7 +79,7 @@ namespace ProductApi.Data
             return products;
         }
 
-        public async Task<Product?> GetProductByIdAsync(int id)
+        public async Task<ProductDto?> GetProductByIdAsync(int id)
         {
             try
             {
@@ -88,9 +88,18 @@ namespace ProductApi.Data
                     await connection.OpenAsync();
 
                     string queryString = @"
-                SELECT *
-                FROM product 
-                WHERE id = @id";
+               SELECT  p.id,
+                p.name,
+                p.price,
+                p.stock,
+                p.description,
+                p.imageUrl,
+                p.productTypeId,
+                pt.name AS productTypeName          -- ① alias persis!
+        FROM    product p
+        LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
+               ON pt.id = p.productTypeId
+                WHERE p.id = @id";
 
                     using (var command = new MySqlCommand(queryString, connection))
                     {
@@ -100,7 +109,7 @@ namespace ProductApi.Data
                         {
                             if (await reader.ReadAsync())
                             {
-                                return new Product
+                                return new ProductDto
                                 {
                                     id = reader.GetInt32("id"),
                                     name = reader.GetString("name"),
@@ -109,6 +118,7 @@ namespace ProductApi.Data
                                     description = reader.IsDBNull("description") ? null : reader.GetString("description"),
                                     productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
                                     imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
+                                    productTypeName = reader.GetString("productTypeName")
                                 };
                             }
                         }
