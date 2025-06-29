@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ProductApi.Services;
+using ScheduleApi.Data;
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -119,6 +120,8 @@ builder.Services.Configure<FileUploadSettings>(
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
+
+builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // =====================================
