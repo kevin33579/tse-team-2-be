@@ -1,8 +1,0 @@
-# Build results
-/bin/
-/obj/
-.DS_Store
-*.pdb
-*.dll
-/net9.0/
-/net9.0/net9.0/
