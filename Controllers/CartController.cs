@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CartApi.Data;
 using CartApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CartApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CartController : ControllerBase
     {
         private readonly ICartRepository _cartRepository;

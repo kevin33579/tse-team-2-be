@@ -1,22 +1,13 @@
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-
 // Import namespace untuk ProductRepository
 using UserApi.Data;
 using ProductApi.Data;
 using ProductTypeApi.Data;
-using ScheduleApi.Data;
-using tse_backend.Models;
-using CartApi.Data;
-
-
 using ProductApi.Configuration;
 using ProductApi.Middleware;
-using CartApi.Models;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using ProductApi.Services;
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -33,7 +24,77 @@ builder.Services.AddEndpointsApiExplorer();
 
 // AddSwaggerGen() = mendaftarkan Swagger generator
 // Swagger = tools untuk generate dokumentasi API otomatis
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Konfigurasi informasi API
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Product API",
+        Version = "v1",
+        Description = "API untuk manajemen produk dengan fitur checkout dan payment",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "Development Team",
+            Email = "dev@yourcompany.com"
+        }
+    });
+
+    // Konfigurasi JWT Bearer Authentication
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Masukkan JWT token dalam format: Bearer {your-token}"
+    });
+
+    // Require authentication untuk semua endpoints
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
+
+    // Include XML comments jika ada
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+});
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+            builder.Configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key not found in configuration")))
+    };
+});
+
 
 // =====================================
 // CONFIGURATION SETTINGS REGISTRATION
@@ -58,10 +119,7 @@ builder.Services.Configure<FileUploadSettings>(
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
-builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
-builder.Services.AddScoped<ICartRepository, CartRepository>();
-
-
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // =====================================
 // CORS CONFIGURATION
@@ -136,9 +194,4 @@ app.Run();
 // 4. Router akan direct request ke controller yang sesuai
 // 5. Controller akan call repository untuk data access
 // 6. Repository akan connect ke database dan return data
-// 7. Response akan dikirim kembali ke clientredirect ke HTTPS
-
-record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// 7. Response akan dikirim kembali ke client
