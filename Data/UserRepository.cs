@@ -93,7 +93,7 @@ namespace UserApi.Data
                             {
                                 Id = reader.GetInt32(0),
                                 Email = reader.GetString(2),
-                                Username = reader.IsDBNull(1) ? null : reader.GetString(3),
+                                Username = reader.IsDBNull(1) ? null : reader.GetString(1),
                                 Password = reader.GetString(3),
                                 CreatedDate = reader.GetDateTime(5),
                                 LastLoginDate = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
