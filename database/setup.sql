@@ -44,6 +44,9 @@ CREATE TABLE productType (
 );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9cbec9e (commit)
 ALTER TABLE productType         
 ADD COLUMN imageUrl TEXT ; 
 
@@ -80,6 +83,7 @@ UPDATE productType
 SET imageUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYD5UL1GXpvNSYNEcIHC5--qpwVN6MolRg8A&s' where id = 4;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 --select
 
@@ -106,6 +110,8 @@ VALUES
 
 =======
 >>>>>>> 5a537f5 (feat auth login)
+=======
+>>>>>>> 9cbec9e (commit)
 -- =====================
 -- TABEL: product
 -- =====================
@@ -128,6 +134,7 @@ INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId
 ('Sedan Honda Civic', 400000, 50, 'Course Sedan Civic', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSE16WKNdc2PArY9ZSP8_LMCPRs2BTOIAa19Q&s', 3),
 ('Dump Truck For Mining ', 1200000, 50, 'Course Dump Truck For Mining', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzW_itCRPNS_jO451fKKBHbBYZ6_XAv4e1KA&s', 4);
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
 -- select
@@ -137,6 +144,8 @@ select * from product;
 
 =======
 >>>>>>> da4c7c9 (adjust list menu kelas)
+=======
+>>>>>>> 9cbec9e (commit)
 
 
 -- =====================

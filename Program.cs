@@ -3,6 +3,7 @@ using UserApi.Data;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 69e4304 (a)
@@ -19,6 +20,8 @@ using UserApi.Data;
 >>>>>>> 69e4304 (a)
 =======
 >>>>>>> e792068 (add to cart)
+=======
+>>>>>>> 9cbec9e (commit)
 using ProductApi.Data;
 using ProductTypeApi.Data;
 using ProductApi.Configuration;
