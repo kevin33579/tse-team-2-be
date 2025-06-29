@@ -7,6 +7,10 @@ namespace UserApi.Data
     public interface IUserRepository
     {
         Task<List<User>> GetAllProductsAsync();
+        Task<User?> GetUserByEmailAsync(string email);
+        Task<bool> CreateUserAsync(RegisterRequest request);
+        Task<bool> UpdateLastLoginAsync(int userId);
+        Task<bool> EmailExistsAsync(string email);
     }
 
     public class UserRepository : IUserRepository
@@ -33,8 +37,8 @@ namespace UserApi.Data
                 // Query SQL untuk mengambil semua produk
                 // @ untuk multiline string, lebih mudah dibaca
                 string queryString = @"
-                    SELECT Id, Username, Email, CreatedDate 
-                    FROM Users ";
+                    SELECT id, username, email,password,roleId createdDate 
+                    FROM users ";
 
                 // MySqlCommand = object untuk menjalankan SQL command
                 using (var command = new MySqlCommand(queryString, connection))
@@ -47,12 +51,12 @@ namespace UserApi.Data
                         {
                             var user = new User
                             {
-                                Id = reader.GetInt32("Id"),
-                                Username = reader.GetString("UserName"),
-                                Email = reader.GetString("Email"),
-                                Password = reader.GetString("Password"),
-                                RoleID = reader.GetInt32("RoleID"),
-                                CreatedDate = reader.GetDateTime("CreatedDate")
+                                Id = reader.GetInt32("id"),
+                                Username = reader.GetString("username"),
+                                Email = reader.GetString("email"),
+                                Password = reader.GetString("password"),
+                                RoleID = reader.GetInt32("roleID"),
+                                CreatedDate = reader.GetDateTime("createdDate")
                             };
 
                             // Tambahkan product ke list
@@ -64,6 +68,108 @@ namespace UserApi.Data
 
             return users;
 
+        }
+
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = @"
+                    SELECT * 
+                    FROM users 
+                    WHERE email = @email AND isActive = 1";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@email", email);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new User
+                            {
+                                Id = reader.GetInt32(0),
+                                Email = reader.GetString(2),
+                                Username = reader.IsDBNull(1) ? null : reader.GetString(3),
+                                Password = reader.GetString(3),
+                                CreatedDate = reader.GetDateTime(5),
+                                LastLoginDate = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
+                                IsActive = reader.GetBoolean(7)
+                            };
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<bool> CreateUserAsync(RegisterRequest request)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = @"
+            INSERT INTO users (username, email, password, roleId, createdDate, isActive) 
+            VALUES (@username, @email, @password, @roleId, @createdDate, @isActive)";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+                    command.Parameters.AddWithValue("@username", request.Username ?? "NewUser");
+                    command.Parameters.AddWithValue("@email", request.Email);
+                    command.Parameters.AddWithValue("@password", hashedPassword);
+                    command.Parameters.AddWithValue("@roleId", 2); // default user role
+                    command.Parameters.AddWithValue("@createdDate", DateTime.Now);
+                    command.Parameters.AddWithValue("@isActive", true);
+
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+
+        public async Task<bool> UpdateLastLoginAsync(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = "UPDATE users SET lastLoginDate = @lastLoginDate WHERE id = @id";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@lastLoginDate", DateTime.Now);
+                    command.Parameters.AddWithValue("@id", id);
+
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = "SELECT COUNT(*) FROM users WHERE email = @email";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@email", email);
+
+                    var result = await command.ExecuteScalarAsync();
+                    return Convert.ToInt32(result) > 0;
+                }
+            }
         }
 
     }
