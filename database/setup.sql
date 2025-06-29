@@ -23,19 +23,21 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL,
     `password` VARCHAR(100) NOT NULL,
     roleId INT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    createdDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    lastLoginDate DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    isActive BOOLEAN DEFAULT True,
     FOREIGN KEY (roleId) REFERENCES roles(id)
 );
 
 INSERT INTO users (username, email, `password`, roleId) VALUES
-('admin', 'admin@example.com', 'admin123', 1),
-('john_doe', 'john@example.com', 'password123', 2);
+('admin', 'admin@example.com', '$2a$11$GQkU36Xltn9I6WRJaBkzEuV/p1sVCX8bTuBeYmK2DbQ60mr9b9o1G', 1), -- password admin123
+('john_doe', 'john@example.com', '$2a$11$xiyq54W4oc7bEC9/cWQKLOI1LyRzLJhQ5rDCyZkN6kM9D88M6RAY2', 2); -- password password123
+
 
 -- =====================
 -- TABEL: productType
 -- =====================
-CREATE TABLE product_type (
+CREATE TABLE productType (
     id INT AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(100) NOT NULL,
     `description` TEXT
@@ -43,7 +45,23 @@ CREATE TABLE product_type (
 
 <<<<<<< HEAD
 ALTER TABLE productType         
-ADD COLUMN imageUrl TEXT ;   
+ADD COLUMN imageUrl TEXT ; 
+
+
+
+INSERT INTO productType (name, description)
+VALUES
+  ('SUV', 'Sport Utility Vehicle, designed for both on-road and off-road use'),
+  ('LCGC', 'Low Cost Green Car, fuel-efficient and affordable vehicle'),
+  ('Sedan', 'Passenger car with a three-box configuration'),
+  ('Truck', 'Motor vehicle designed to transport cargo');
+
+  INSERT INTO productType (name, description, imageUrl )
+VALUES
+  ('Hatchback', 'a car body style that typically features a rear door that opens upwards, combining the passenger and cargo areas into a single compartment','https://hips.hearstapps.com/hmg-prod/images/2023-lightning-lap-volkswagen-golf-gti-mu-105-1675446169.jpg?crop=0.629xw:0.630xh;0.121xw,0.199xh&resize=980:*'),
+  ('MPV', 'a car designed to maximize passenger capacity and comfort, making it ideal for families or groups','https://www.gardaoto.com/wp-content/uploads/2023/04/Screenshot-2023-04-27-105141.png'),
+  ('Electric', 'a vehicle that is propelled by one or more electric motors, powered by rechargeable batteries','https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRa0lzeM2DGdIdz5kokeBShM9j25l0znUVpiw&s'),
+  ('Offroad', 'a motorized vehicle designed to travel over rough, uneven, or unpaved terrain, including dirt, gravel, mud, snow, and other challenging surfaces','https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPwAPvIkvJqNXBNZhaB9CoNZNZ8Lb0Nehi9Q&s');
 
 -- SUV
 UPDATE productType
@@ -61,6 +79,7 @@ SET imageUrl = 'https://s3.ap-southeast-1.amazonaws.com/img.jba.co.id//wysiwyg/c
 UPDATE productType
 SET imageUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYD5UL1GXpvNSYNEcIHC5--qpwVN6MolRg8A&s' where id = 4;
 
+<<<<<<< HEAD
 
 --select
 
@@ -85,6 +104,8 @@ VALUES
   ('Electric', 'a vehicle that is propelled by one or more electric motors, powered by rechargeable batteries','https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRa0lzeM2DGdIdz5kokeBShM9j25l0znUVpiw&s'),
   ('Offroad', 'a motorized vehicle designed to travel over rough, uneven, or unpaved terrain, including dirt, gravel, mud, snow, and other challenging surfaces','https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPwAPvIkvJqNXBNZhaB9CoNZNZ8Lb0Nehi9Q&s');
 
+=======
+>>>>>>> 5a537f5 (feat auth login)
 -- =====================
 -- TABEL: product
 -- =====================
@@ -99,9 +120,6 @@ CREATE TABLE product (
     FOREIGN KEY (productTypeId) REFERENCES productType(id)
 );
 
-ALTER TABLE product          
-ADD COLUMN imageUrl TEXT ;   
-
 
 INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId) VALUES
 ('Kijang Innova', 700000, 100, 'Course SUV Kijang Innova','https://imgcdn.oto.com/large/gallery/exterior/38/1240/toyota-kijang-innova-front-angle-low-view-351782.jpg' ,1),
@@ -109,6 +127,13 @@ INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId
 ('Honda Brio', 300000, 50, 'Course Honda Brio', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaZwfpwxblQIHqRAerXMqA9Dfi36spg3EOVQ&s', 2),
 ('Sedan Honda Civic', 400000, 50, 'Course Sedan Civic', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSE16WKNdc2PArY9ZSP8_LMCPRs2BTOIAa19Q&s', 3),
 ('Dump Truck For Mining ', 1200000, 50, 'Course Sedan Civic', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzW_itCRPNS_jO451fKKBHbBYZ6_XAv4e1KA&s', 3);
+
+
+-- select
+
+select * from productType;
+select * from product;
+
 
 
 -- =====================
