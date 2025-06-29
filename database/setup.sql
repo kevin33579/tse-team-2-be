@@ -101,13 +101,6 @@ INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId
 ('Dump Truck For Mining ', 1200000, 50, 'Course Dump Truck For Mining', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzW_itCRPNS_jO451fKKBHbBYZ6_XAv4e1KA&s', 4);
 
 
--- select
-
-select * from productType;
-select * from product;
-
-
-
 -- =====================
 -- TABEL: schedule
 -- =====================
