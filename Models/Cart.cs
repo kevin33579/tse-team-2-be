@@ -20,6 +20,14 @@ namespace CartApi.Models
 
         [Range(1, int.MaxValue)]
         public int Quantity { get; set; } = 1;
+        public DateTime? ScheduleTime { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string ProductTypeName { get; set; } = string.Empty;
+
+        public string? ProductImageUrl { get; set; }
+
+        public decimal ProductPrice { get; set; }
+
 
     }
 
