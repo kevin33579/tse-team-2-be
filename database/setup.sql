@@ -172,10 +172,19 @@ CREATE TABLE paymentMethod (
     `name` VARCHAR(100) NOT NULL
 );
 
-INSERT INTO paymentMethod (`name`) VALUES
-('Bank Transfer'),
-('Credit Card'),
-('Cash');
+
+ALTER TABLE paymentMethod         
+ADD COLUMN imageUrl TEXT ; 
+
+
+INSERT INTO paymentMethod (`name`,`imageUrl`) VALUES
+('Gopay','https://static.vecteezy.com/system/resources/thumbnails/028/766/371/small_2x/gopay-payment-icon-symbol-free-png.png'),
+('Ovo','https://play-lh.googleusercontent.com/-kwEfsDenlwTCoWTe2BCAOv9YFPE4m5EReErdU_BsYYcISAtQ16JflXuwU8Okuw3Y6E'),
+('Dana','https://1000logos.net/wp-content/uploads/2021/03/Dana-logo.jpg'),
+('Mandiri','https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/2560px-Bank_Mandiri_logo_2016.svg.png'),
+('BCA','https://www.svgrepo.com/show/303676/bca-bank-central-asia-logo.svg'),
+('BNI','https://images.seeklogo.com/logo-png/35/1/bank-bni-logo-png_seeklogo-355606.png')
+;
 
 -- =====================
 -- TABEL: invoice
