@@ -10,7 +10,7 @@ namespace ProductApi.Data
     {
         Task<List<ProductDto>> GetAllProductsAsync();                                          // READ - Get all
         Task<ProductDto?> GetProductByIdAsync(int id);                                        // READ - Get by ID  
-        Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId);                  // READ - Get by ProductType ID
+        Task<List<ProductDto>> GetProductsByTypeIdAsync(int productTypeId);                  // READ - Get by ProductType ID
         Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
 
         Task<int> CreateProductAsync(Product product);                                     // CREATE - Return new ID
@@ -134,9 +134,9 @@ namespace ProductApi.Data
         }
 
 
-        public async Task<List<Product>> GetProductsByTypeIdAsync(int productTypeId)
+        public async Task<List<ProductDto>> GetProductsByTypeIdAsync(int productTypeId)
         {
-            var products = new List<Product>();
+            var products = new List<ProductDto>();
 
             try
             {
@@ -165,7 +165,7 @@ namespace ProductApi.Data
                         {
                             while (await reader.ReadAsync())
                             {
-                                var product = new Product
+                                var product = new ProductDto
                                 {
                                     id = reader.GetInt32("id"),
                                     name = reader.GetString("name"),
