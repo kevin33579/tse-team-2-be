@@ -190,16 +190,25 @@ INSERT INTO paymentMethod (`name`,`imageUrl`) VALUES
 -- TABEL: invoice
 -- =====================
 CREATE TABLE invoice (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    invoiceCode VARCHAR(100) NOT NULL,
-    `date` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    totalPrice DECIMAL(10,2),
-    totalCourse INT,
-    paymentMethodId INT
-);
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT NOT NULL,
+    invoiceCode     VARCHAR(100) NOT NULL,
+    `date`          DATETIME DEFAULT CURRENT_TIMESTAMP,
+    totalPrice      DECIMAL(10,2),
+    totalCourse     INT,
+    paymentMethodId INT,
+    CONSTRAINT fk_invoice_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+) ENGINE = InnoDB;
 
-INSERT INTO invoice (invoiceCode, totalPrice, totalCourse, paymentMethodId) VALUES
-('INV-001', 850000, 2, 1);
+
+
+INSERT INTO invoice
+        (user_id, invoiceCode, `date`, totalPrice, totalCourse, paymentMethodId)
+VALUES  (1, 'INV-20250701-0001', NOW(), 1500000.00, 3, 2);
+
 
 
 

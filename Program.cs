@@ -11,7 +11,8 @@ using ProductApi.Services;
 using ScheduleApi.Data;
 using CartApi.Data;
 using PaymentApi.Data;
-using PaymentApi.Models;
+using InvoiceApi.Data;
+
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -128,6 +129,8 @@ builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // =====================================
