@@ -11,6 +11,10 @@ using ProductApi.Services;
 using ScheduleApi.Data;
 using CartApi.Data;
 using PaymentApi.Data;
+using PaymentApi.Models;
+using ProductApi.Services;
+using UserApi.Services;
+using Microsoft.Extensions.Options;
 using InvoiceApi.Data;
 using InvoiceDetailApi.Data;
 
@@ -108,6 +112,11 @@ builder.Services.AddAuthentication(options =>
 // Configure strongly typed settings objects
 builder.Services.Configure<AppSettings>(
     builder.Configuration.GetSection("AppSettings"));
+
+builder.Services.AddSingleton(resolver =>
+    resolver.GetRequiredService<IOptions<AppSettings>>().Value
+);
+
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<SecuritySettings>(
@@ -134,6 +143,7 @@ builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IInvoiceDetailRepository, InvoiceDetailRepository>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // =====================================
 // CORS CONFIGURATION
