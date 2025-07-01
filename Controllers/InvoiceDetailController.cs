@@ -48,7 +48,11 @@ namespace YourApp.Controllers
             }
             catch (DatabaseException ex)
             {
-                return StatusCode(500, new { message = "Failed to fetch invoice details.", ex.Message });
+                return StatusCode(500, new
+                {
+                    message = "Failed to insert invoice details.",
+                    error = ex.Message
+                });
             }
         }
     }

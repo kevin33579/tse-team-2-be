@@ -4,20 +4,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
-using ProductApi.Exceptions;      // DatabaseException
-using InvoiceDetailApi.Models;             // DetailInvoice model
+using InvoiceDetailApi.Models;
+using ProductApi.Exceptions;       // DatabaseException
 
 namespace InvoiceDetailApi.Data
 {
     public interface IInvoiceDetailRepository
     {
-        /// <summary>Create a single detail row and return its new ID.</summary>
         Task<uint> CreateAsync(DetailInvoice detail, CancellationToken ct = default);
-
-        /// <summary>Bulk‑insert many rows; returns number of rows inserted.</summary>
         Task<int> CreateManyAsync(IEnumerable<DetailInvoice> details, CancellationToken ct = default);
-
-        /// <summary>Get all details for one invoice.</summary>
         Task<List<DetailInvoice>> GetByInvoiceIdAsync(uint invoiceId, CancellationToken ct = default);
     }
 
@@ -25,21 +20,21 @@ namespace InvoiceDetailApi.Data
     {
         private readonly string _connString;
 
-        public InvoiceDetailRepository(IConfiguration config)
+        public InvoiceDetailRepository(IConfiguration cfg)
         {
-            _connString = config.GetConnectionString("DefaultConnection")
-                     ?? throw new InvalidOperationException(
-                          "Missing connection string: DefaultConnection");
+            _connString = cfg.GetConnectionString("DefaultConnection")
+                       ?? throw new InvalidOperationException(
+                              "Missing connection string: DefaultConnection");
         }
 
-        // ───────────────────────────────────────────────────────
-        // CREATE one row
-        // ───────────────────────────────────────────────────────
+        // ───────────────────────────────
+        //  CREATE (single row)
+        // ───────────────────────────────
         public async Task<uint> CreateAsync(DetailInvoice detail, CancellationToken ct = default)
         {
             const string sql = @"
-INSERT INTO detail_invoice (invoice_id, cart_id)
-VALUES (@InvoiceId, @CartId);
+INSERT INTO detail_invoice (invoice_id, product_id, schedule_id)
+VALUES (@InvoiceId, @ProductId, @ScheduleId);
 SELECT LAST_INSERT_ID();";
 
             try
@@ -49,7 +44,8 @@ SELECT LAST_INSERT_ID();";
 
                 await using var cmd = new MySqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@InvoiceId", detail.InvoiceId);
-                cmd.Parameters.AddWithValue("@CartId", detail.CartId);
+                cmd.Parameters.AddWithValue("@ProductId", detail.ProductId);
+                cmd.Parameters.AddWithValue("@ScheduleId", detail.ScheduleId);
 
                 var newId = (ulong)await cmd.ExecuteScalarAsync(ct);
                 return (uint)newId;
@@ -57,25 +53,24 @@ SELECT LAST_INSERT_ID();";
             catch (Exception ex)
             {
                 throw new DatabaseException("INSERT",
-                    $"Gagal membuat detail_invoice untuk invoice {detail.InvoiceId}", ex);
+                    $"Failed to create detail for invoice {detail.InvoiceId}.", ex);
             }
         }
 
-        // ───────────────────────────────────────────────────────
-        // BULK‑CREATE many rows
-        // ───────────────────────────────────────────────────────
+        // ───────────────────────────────
+        //  BULK‑CREATE (many rows)
+        // ───────────────────────────────
         public async Task<int> CreateManyAsync(IEnumerable<DetailInvoice> details, CancellationToken ct = default)
         {
             var list = new List<DetailInvoice>(details);
             if (list.Count == 0) return 0;
 
-            // Build one VALUES set per row:  (@i0,@c0),(@i1,@c1)…
             var values = new List<string>();
             for (int i = 0; i < list.Count; i++)
-                values.Add($"(@InvoiceId{i}, @CartId{i})");
+                values.Add($"(@Inv{i}, @Prod{i}, @Sched{i})");
 
             var sql = $@"
-INSERT INTO detail_invoice (invoice_id, cart_id)
+INSERT INTO detail_invoice (invoice_id, product_id, schedule_id)
 VALUES {string.Join(", ", values)};";
 
             try
@@ -84,51 +79,50 @@ VALUES {string.Join(", ", values)};";
                 await conn.OpenAsync(ct);
 
                 await using var cmd = new MySqlCommand(sql, conn);
-
                 for (int i = 0; i < list.Count; i++)
                 {
-                    cmd.Parameters.AddWithValue($"@InvoiceId{i}", list[i].InvoiceId);
-                    cmd.Parameters.AddWithValue($"@CartId{i}", list[i].CartId);
+                    cmd.Parameters.AddWithValue($"@Inv{i}", list[i].InvoiceId);
+                    cmd.Parameters.AddWithValue($"@Prod{i}", list[i].ProductId);
+                    cmd.Parameters.AddWithValue($"@Sched{i}", list[i].ScheduleId);
                 }
 
-                return await cmd.ExecuteNonQueryAsync(ct);   // rows inserted
+                return await cmd.ExecuteNonQueryAsync(ct);
             }
             catch (Exception ex)
             {
                 throw new DatabaseException("INSERT",
-                    "Gagal membuat banyak detail_invoice", ex);
+                    "Failed to bulk‑insert detail_invoice rows.", ex);
             }
         }
 
-        // ───────────────────────────────────────────────────────
-        // GET by invoice_id
-        // ───────────────────────────────────────────────────────
+        // ───────────────────────────────
+        //  SELECT by invoice_id
+        // ───────────────────────────────
         public async Task<List<DetailInvoice>> GetByInvoiceIdAsync(uint invoiceId, CancellationToken ct = default)
         {
             const string sql = @"
-SELECT  di.id,
-        di.invoice_id,
-        di.cart_id,
+SELECT di.id,
+       di.invoice_id,
+       di.product_id,
+       di.schedule_id,
 
-        p.id            AS product_id,
-        p.name          AS productName,
-        p.price         AS productPrice,
-        pt.name         AS productTypeName,
+       inv.invoiceCode,
+       inv.date        AS invoiceDate,
+       inv.totalPrice  AS invoiceTotalPrice,
 
-        inv.invoiceCode,
-        inv.totalPrice  AS invoiceTotalPrice,
-        inv.date        AS invoiceDate,
+       p.name          AS productName,
+       p.price         AS productPrice,
+       pt.name         AS productTypeName,
 
-        c.schedule_id,
-        s.time          AS scheduleTime
+       s.time          AS scheduleTime            
 
-FROM        detail_invoice di
-JOIN        invoice       inv ON inv.id = di.invoice_id         
-JOIN        carts          c  ON c.id  = di.cart_id
-JOIN        product        p  ON p.id  = c.product_id
-JOIN        producttype    pt ON pt.id = p.productTypeId
-LEFT JOIN   schedule       s  ON s.id  = c.schedule_id
-WHERE       di.invoice_id = @InvoiceId;";
+FROM   detail_invoice di
+JOIN   invoice       inv ON inv.id = di.invoice_id
+JOIN   product        p  ON p.id  = di.product_id
+JOIN   producttype    pt ON pt.id = p.productTypeId
+LEFT JOIN schedule     s ON s.id  = di.schedule_id   
+WHERE  di.invoice_id = @InvoiceId;";
+
 
 
 
@@ -142,24 +136,22 @@ WHERE       di.invoice_id = @InvoiceId;";
                 await using var cmd = new MySqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@InvoiceId", invoiceId);
 
-                await using var reader = (MySqlDataReader)await cmd.ExecuteReaderAsync(ct);
-                while (await reader.ReadAsync(ct))
+                await using var rdr = (MySqlDataReader)await cmd.ExecuteReaderAsync(ct);
+                while (await rdr.ReadAsync(ct))
                 {
                     result.Add(new DetailInvoice
                     {
-                        Id = reader.GetUInt32("id"),
-                        InvoiceId = reader.GetUInt32("invoice_id"),
-                        CartId = reader.GetUInt32("cart_id"),
-                        ProductId = reader.GetUInt32("product_id"),
-                        ProductName = reader.GetString("productName"),
-
-                        ScheduleId = reader.GetUInt32("schedule_id"),
-                        ScheduleTime = reader.GetDateTime("scheduleTime"),
-                        ProductPrice = reader.GetDecimal("productPrice"),
-                        ProductTypeName = reader.GetString("productTypeName"),
-                        InvoiceCode = reader.GetString("invoiceCode"),
-                        InvoiceTotalPrice = reader.GetDecimal("invoiceTotalPrice"),
-                        InvoiceDate = reader.GetDateTime("invoiceDate"),
+                        Id = rdr.GetUInt32("id"),
+                        InvoiceId = rdr.GetUInt32("invoice_id"),
+                        ProductId = rdr.GetUInt32("product_id"),
+                        ScheduleId = rdr.GetUInt32("schedule_id"),
+                        InvoiceCode = rdr.GetString("invoiceCode"),
+                        InvoiceDate = rdr.GetDateTime("invoiceDate"),
+                        InvoiceTotalPrice = rdr.GetDecimal("invoiceTotalPrice"),
+                        ProductName = rdr.GetString("productName"),
+                        ProductPrice = rdr.GetDecimal("productPrice"),
+                        ProductTypeName = rdr.GetString("productTypeName"),
+                        ScheduleTime = rdr.GetDateTime("scheduleTime")
                     });
                 }
 
@@ -168,7 +160,7 @@ WHERE       di.invoice_id = @InvoiceId;";
             catch (Exception ex)
             {
                 throw new DatabaseException("SELECT",
-                    $"Gagal mengambil detail_invoice untuk invoice {invoiceId}", ex);
+                    $"Failed to fetch detail_invoice rows for invoice {invoiceId}.", ex);
             }
         }
     }

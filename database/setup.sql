@@ -218,17 +218,34 @@ VALUES  (1, 'INV-20250701-0001', NOW(), 1500000.00, 3, 2);
 CREATE TABLE detail_invoice (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     invoice_id  INT NOT NULL,
-    cart_id     INT NOT NULL,
+    product_id  INT NOT NULL,
+    schedule_id INT NULL,
 
-    CONSTRAINT fk_detail_invoice_invoice
-      FOREIGN KEY (invoice_id) REFERENCES invoice(id)
-      ON DELETE CASCADE,
+    INDEX idx_invoice  (invoice_id),
+    INDEX idx_product  (product_id),
+    INDEX idx_schedule (schedule_id)   
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
 
-    CONSTRAINT fk_detail_invoice_cart
-      FOREIGN KEY (cart_id)    REFERENCES carts(id)
-) ENGINE = InnoDB;
 
-INSERT INTO detail_invoice (invoice_id, cart_id)
-VALUES (1, 1);
+ALTER TABLE detail_invoice
+  ADD CONSTRAINT fk_detail_invoice_invoice
+      FOREIGN KEY (invoice_id) REFERENCES invoice(id);
+
+ALTER TABLE detail_invoice
+  ADD CONSTRAINT fk_detail_invoice_product
+      FOREIGN KEY (product_id) REFERENCES product(id);
+
+ALTER TABLE detail_invoice
+  ADD CONSTRAINT fk_detail_invoice_schedule
+      FOREIGN KEY (schedule_id) REFERENCES schedule(id);
+
+
+
+
+INSERT INTO detail_invoice (invoice_id, product_id,schedule_id)
+VALUES (1, 1,1);
+
+
 
 
