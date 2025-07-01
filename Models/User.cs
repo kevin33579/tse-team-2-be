@@ -18,6 +18,12 @@ namespace UserApi.Models
                 public DateTime CreatedDate { get; set; } = DateTime.Now;
                 public DateTime? LastLoginDate { get; set; }
                 public bool IsActive { get; set; } = true;
+
+                public bool IsEmailVerified { get; set; } = false;
+                public string? EmailVerificationToken { get; set; }
+                public DateTime? EmailTokenCreatedAt { get; set; }
+                public string? PasswordResetToken { get; set; }
+                public DateTime? PasswordResetTokenCreatedAt { get; set; }
         }
 
         public class LoginRequest
@@ -46,16 +52,36 @@ namespace UserApi.Models
         }
 
         public class RegisterRequest
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-        
-        [Required]
-        [MinLength(6)]
-        public string Password { get; set; } = string.Empty;
-        
-        public string? Username { get; set; }
-        
-    }
+        {
+                [Required]
+                [EmailAddress]
+                public string Email { get; set; } = string.Empty;
+
+                [Required]
+                [MinLength(6)]
+                public string Password { get; set; } = string.Empty;
+
+                public string? Username { get; set; }
+
+        }
+        public class ForgotPasswordRequest
+        {
+                [Required]
+                [EmailAddress]
+                public string Email { get; set; } = string.Empty;
+        }
+
+        public class ResetPasswordRequest
+        {
+                [Required]
+                public string Token { get; set; } = string.Empty;
+
+                [Required]
+                [MinLength(6)]
+                public string NewPassword { get; set; } = string.Empty;
+
+                [Required]
+                [Compare("NewPassword", ErrorMessage = "Password dan konfirmasi password tidak sama")]
+                public string ConfirmPassword { get; set; } = string.Empty;
+        }
 }

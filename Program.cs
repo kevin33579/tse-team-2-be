@@ -12,6 +12,10 @@ using ScheduleApi.Data;
 using CartApi.Data;
 using PaymentApi.Data;
 using PaymentApi.Models;
+using ProductApi.Services;
+using UserApi.Services;
+using Microsoft.Extensions.Options;
+
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -106,6 +110,11 @@ builder.Services.AddAuthentication(options =>
 // Configure strongly typed settings objects
 builder.Services.Configure<AppSettings>(
     builder.Configuration.GetSection("AppSettings"));
+
+builder.Services.AddSingleton(resolver =>
+    resolver.GetRequiredService<IOptions<AppSettings>>().Value
+);
+
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<SecuritySettings>(
@@ -129,6 +138,7 @@ builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // =====================================
 // CORS CONFIGURATION

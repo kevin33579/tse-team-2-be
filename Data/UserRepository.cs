@@ -1,6 +1,7 @@
 using System.Data; // DataSet, DataRow, DataNulll
 using MySql.Data.MySqlClient;
 using UserApi.Models;
+using UserApi.Services;
 
 namespace UserApi.Data
 {
@@ -9,8 +10,16 @@ namespace UserApi.Data
         Task<List<User>> GetAllProductsAsync();
         Task<User?> GetUserByEmailAsync(string email);
         Task<bool> CreateUserAsync(RegisterRequest request);
-        Task<bool> UpdateLastLoginAsync(int userId);
+        Task<bool> UpdateLastLoginAsync(int id);
         Task<bool> EmailExistsAsync(string email);
+
+        Task<bool> VerifyUserEmailAsync(int id);
+        Task<bool> VerifyEmailAsync(string token); // Verify by token
+        Task<string> UpdateEmailVerificationTokenAsync(int id);
+        Task<string> UpdatePasswordResetTokenAsync(int id);
+        Task<User?> GetUserByPasswordResetTokenAsync(string token);
+        Task<bool> UpdatePasswordAndClearResetTokenAsync(int id, string newHashedPassword);
+
     }
 
     public class UserRepository : IUserRepository
@@ -172,7 +181,171 @@ namespace UserApi.Data
             }
         }
 
+        public async Task<bool> VerifyUserEmailAsync(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = @"UPDATE users 
+                               SET isEmailVerified = TRUE, 
+                                   emailVerificationToken = NULL, 
+                                   emailTokenCreatedAt = NULL 
+                               WHERE id = @id";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
+
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public async Task<bool> VerifyEmailAsync(string token)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                // Check token validity and update user
+                string query = @"UPDATE users 
+                               SET isEmailVerified = 1, 
+                                   emailVerificationToken = NULL, 
+                                   emailTokenCreatedAt = NULL 
+                               WHERE emailVerificationToken = @token 
+                               AND emailTokenCreatedAt > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                               AND isEmailVerified = 0";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@token", token);
+
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public async Task<string> UpdateEmailVerificationTokenAsync(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string newToken = Guid.NewGuid().ToString();
+                string query = @"
+            UPDATE users 
+            SET emailVerificationToken = @token, 
+                emailTokenCreatedAt = @createdDate 
+            WHERE id = @id";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@token", newToken);
+                    command.Parameters.AddWithValue("@createdDate", DateTime.Now);
+                    command.Parameters.AddWithValue("@id", id);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                return newToken;
+            }
+        }
+
+        public async Task<string> UpdatePasswordResetTokenAsync(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string newToken = Guid.NewGuid().ToString();
+                string query = @"
+            UPDATE users 
+            SET passwordResetToken = @token, 
+                passwordResetTokenCreatedAt = @createdDate
+            WHERE id = @id";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@token", newToken);
+                    command.Parameters.AddWithValue("@createdDate", DateTime.Now);
+                    command.Parameters.AddWithValue("@id", id);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                return newToken;
+            }
+        }
+
+        public async Task<User?> GetUserByPasswordResetTokenAsync(string token)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = @"
+            SELECT * 
+            FROM users 
+            WHERE PasswordResetToken = @token 
+              AND passwordResetTokenCreatedAt > DATE_SUB(NOW(), INTERVAL 1 HOUR)";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@token", token);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new User
+                            {
+                                Id = reader.GetInt32("id"),
+                                Username = reader.GetString("username"),
+                                Email = reader.GetString("email"),
+                                Password = reader.GetString("password"),
+                                RoleID = reader.GetInt32("roleID"),
+                                CreatedDate = reader.GetDateTime("createdDate"),
+                                LastLoginDate = reader.IsDBNull("lastLoginDate") ? null : reader.GetDateTime("lastLoginDate"),
+                                IsActive = reader.GetBoolean("isActive"),
+                                IsEmailVerified = reader.GetBoolean("isEmailVerified"),
+                                EmailVerificationToken = reader.IsDBNull("emailVerificationToken") ? null : reader.GetString("emailVerificationToken"),
+                                EmailTokenCreatedAt = reader.IsDBNull("emailTokenCreatedAt") ? null : reader.GetDateTime("emailTokenCreatedAt"),
+                                PasswordResetToken = reader.IsDBNull("passwordResetToken") ? null : reader.GetString("passwordResetToken"),
+                                PasswordResetTokenCreatedAt = reader.IsDBNull("passwordResetTokenCreatedAt") ? null : reader.GetDateTime("passwordResetTokenCreatedAt"),
+                            };
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<bool> UpdatePasswordAndClearResetTokenAsync(int id, string newHashedPassword)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = @"
+            UPDATE users 
+            SET password = @Password,
+                passwordResetToken = NULL,
+                passwordResetTokenCreatedAt = NULL
+            WHERE id = @id";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@password", newHashedPassword);
+                    command.Parameters.AddWithValue("@id", id);
+
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
     }
-
-
 }

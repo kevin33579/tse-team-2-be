@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using UserApi.Models;
 using UserApi.Data;
 using ProductApi.Services;
-
+using UserApi.Services;
+using ProductApi.Configuration;
 namespace UserApi.Controllers
 {
     [ApiController]
@@ -11,14 +12,22 @@ namespace UserApi.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
+        private readonly IEmailService _emailService;
         private readonly ILogger<AuthController> _logger;
+        private readonly AppSettings _appSettings;
 
-        public AuthController(IUserRepository userRepository, ITokenService tokenService, ILogger<AuthController> logger)
+
+        public AuthController(IUserRepository userRepository, ITokenService tokenService, IEmailService emailService, ILogger<AuthController> logger,
+    AppSettings appSettings)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
+            _emailService = emailService;
             _logger = logger;
+            _appSettings = appSettings;
         }
+
+
 
         /// <summary>
         /// Login dengan email dan password
@@ -155,10 +164,21 @@ namespace UserApi.Controllers
                     });
                 }
 
-                // Generate JWT token for the new user
+                // Generate email verification token
+                string verificationToken = await _userRepository.UpdateEmailVerificationTokenAsync(newUser.Id);
+
+                // buat link verifikasi (contoh)
+                string verificationLink = $"https://yourfrontend.com/verify?token={verificationToken}";
+
+                // kirim email
+                await _emailService.SendEmailAsync(newUser.Email, "Verifikasi Akun Anda",
+                    $"Klik link berikut untuk verifikasi akun Anda: <a href='{verificationLink}'>Verifikasi</a>");
+
+                // Generate JWT token (optional, kalau mau auto login)
                 string token = _tokenService.GenerateToken(newUser);
 
-                _logger.LogInformation($"Register successful for email: {request.Email}");
+                _logger.LogInformation($"Register successful for email: {request.Email}, verification email sent.");
+
 
                 return Ok(new LoginResponse
                 {
@@ -201,5 +221,178 @@ namespace UserApi.Controllers
                 Message = "Logout berhasil"
             });
         }
+
+        [HttpGet("verify-email")]
+        public async Task<ActionResult<LoginResponse>> VerifyEmail([FromQuery] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    return BadRequest(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Token verifikasi tidak valid"
+                    });
+                }
+
+                // Verify email with token
+                bool verified = await _userRepository.VerifyEmailAsync(token);
+
+                if (!verified)
+                {
+                    return BadRequest(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Token verifikasi tidak valid atau sudah expired"
+                    });
+                }
+
+                _logger.LogInformation($"Email verification successful for token: {token.Substring(0, 8)}...");
+
+                return Ok(new LoginResponse
+                {
+                    Success = true,
+                    Message = "Email berhasil diverifikasi. Silakan login dengan akun Anda."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error during email verification for token: {token?.Substring(0, 8)}...");
+                return StatusCode(500, new LoginResponse
+                {
+                    Success = false,
+                    Message = "Terjadi kesalahan server"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Meminta reset password
+        /// POST /api/auth/forgot-password
+        /// </summary>
+        [HttpPost("forgot-password")]
+        public async Task<ActionResult<LoginResponse>> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Email))
+                {
+                    return BadRequest(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Email tidak valid"
+                    });
+                }
+
+                var user = await _userRepository.GetUserByEmailAsync(request.Email);
+                if (user == null)
+                {
+                    return Ok(new LoginResponse
+                    {
+                        Success = true,
+                        Message = "Jika email terdaftar, link reset password telah dikirim."
+                    });
+                }
+
+                if (!user.IsActive)
+                {
+                    return BadRequest(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Akun Anda belum aktif."
+                    });
+                }
+
+                // generate token
+                string resetToken = await _userRepository.UpdatePasswordResetTokenAsync(user.Id);
+
+                // buat link reset
+                string resetLink = $"{_appSettings.FrontendBaseUrl}/create-new-password?token={resetToken}";
+
+
+                // kirim email
+                await _emailService.SendEmailAsync(user.Email, "Reset Password",
+                    $"Klik link berikut untuk reset password: <a href='{resetLink}'>Reset Password</a>");
+
+                _logger.LogInformation($"Password reset email sent to {user.Email}");
+
+                return Ok(new LoginResponse
+                {
+                    Success = true,
+                    Message = "Jika email terdaftar, link reset password telah dikirim."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error during forgot password for email: {request.Email}");
+                return StatusCode(500, new LoginResponse
+                {
+                    Success = false,
+                    Message = "Terjadi kesalahan server"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Reset password menggunakan token
+        /// POST /api/auth/reset-password
+        /// </summary>
+        [HttpPost("reset-password")]
+        public async Task<ActionResult<LoginResponse>> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Data tidak valid"
+                    });
+                }
+
+                var user = await _userRepository.GetUserByPasswordResetTokenAsync(request.Token);
+                if (user == null)
+                {
+                    return BadRequest(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Token reset password tidak valid atau sudah expired"
+                    });
+                }
+
+                // hash password baru
+                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+
+                bool updated = await _userRepository.UpdatePasswordAndClearResetTokenAsync(user.Id, hashedPassword);
+                if (!updated)
+                {
+                    return StatusCode(500, new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Gagal memperbarui password"
+                    });
+                }
+
+                _logger.LogInformation($"Password reset successful for user {user.Email}");
+
+                return Ok(new LoginResponse
+                {
+                    Success = true,
+                    Message = "Password berhasil direset. Silakan login dengan password baru."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error during reset password with token: {request.Token}");
+                return StatusCode(500, new LoginResponse
+                {
+                    Success = false,
+                    Message = "Terjadi kesalahan server"
+                });
+            }
+        }
+
     }
 }
