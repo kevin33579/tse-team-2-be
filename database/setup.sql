@@ -190,32 +190,62 @@ INSERT INTO paymentMethod (`name`,`imageUrl`) VALUES
 -- TABEL: invoice
 -- =====================
 CREATE TABLE invoice (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    invoiceCode VARCHAR(100) NOT NULL,
-    `date` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    totalPrice DECIMAL(10,2),
-    totalCourse INT,
-    paymentMethodId INT
-);
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT NOT NULL,
+    invoiceCode     VARCHAR(100) NOT NULL,
+    `date`          DATETIME DEFAULT CURRENT_TIMESTAMP,
+    totalPrice      DECIMAL(10,2),
+    totalCourse     INT,
+    paymentMethodId INT,
+    CONSTRAINT fk_invoice_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+) ENGINE = InnoDB;
 
-INSERT INTO invoice (invoiceCode, totalPrice, totalCourse, paymentMethodId) VALUES
-('INV-001', 850000, 2, 1);
+
+
+INSERT INTO invoice
+        (user_id, invoiceCode, `date`, totalPrice, totalCourse, paymentMethodId)
+VALUES  (1, 'INV-20250701-0001', NOW(), 1500000.00, 3, 2);
+
 
 
 
 -- =====================
 -- TABEL: detailInvoice
 -- =====================
-CREATE TABLE detailInvoice (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    invoiceId INT,
-    productId INT,
-    scheduleId INT,
-    FOREIGN KEY (invoiceId) REFERENCES invoice(id),
-    FOREIGN KEY (productId) REFERENCES product(id),
-    FOREIGN KEY (scheduleId) REFERENCES schedule(id)
-);
+CREATE TABLE detail_invoice (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_id  INT NOT NULL,
+    product_id  INT NOT NULL,
+    schedule_id INT NULL,
 
-INSERT INTO detailInvoice (invoiceId, productId, scheduleId) VALUES
-(1, 1, 1),
-(1, 2, 2);
+    INDEX idx_invoice  (invoice_id),
+    INDEX idx_product  (product_id),
+    INDEX idx_schedule (schedule_id)   
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
+
+
+ALTER TABLE detail_invoice
+  ADD CONSTRAINT fk_detail_invoice_invoice
+      FOREIGN KEY (invoice_id) REFERENCES invoice(id);
+
+ALTER TABLE detail_invoice
+  ADD CONSTRAINT fk_detail_invoice_product
+      FOREIGN KEY (product_id) REFERENCES product(id);
+
+ALTER TABLE detail_invoice
+  ADD CONSTRAINT fk_detail_invoice_schedule
+      FOREIGN KEY (schedule_id) REFERENCES schedule(id);
+
+
+
+
+INSERT INTO detail_invoice (invoice_id, product_id,schedule_id)
+VALUES (1, 1,1);
+
+
+
+

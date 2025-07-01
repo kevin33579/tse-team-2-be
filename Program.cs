@@ -15,6 +15,8 @@ using PaymentApi.Models;
 using ProductApi.Services;
 using UserApi.Services;
 using Microsoft.Extensions.Options;
+using InvoiceApi.Data;
+using InvoiceDetailApi.Data;
 
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
@@ -137,6 +139,9 @@ builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IInvoiceDetailRepository, InvoiceDetailRepository>();
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
