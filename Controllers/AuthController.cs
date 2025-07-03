@@ -164,20 +164,20 @@ namespace UserApi.Controllers
                     });
                 }
 
-                // Generate email verification token
-                string verificationToken = await _userRepository.UpdateEmailVerificationTokenAsync(newUser.Id);
+                // // Generate email verification token
+                // string verificationToken = await _userRepository.UpdateEmailVerificationTokenAsync(newUser.Id);
 
-                // buat link verifikasi (contoh)
-                string verificationLink = $"https://yourfrontend.com/verify?token={verificationToken}";
+                // // buat link verifikasi (contoh)
+                // string verificationLink = $"https://yourfrontend.com/verify?token={verificationToken}";
 
-                // kirim email
-                await _emailService.SendEmailAsync(newUser.Email, "Verifikasi Akun Anda",
-                    $"Klik link berikut untuk verifikasi akun Anda: <a href='{verificationLink}'>Verifikasi</a>");
+                // // kirim email
+                // await _emailService.SendEmailAsync(newUser.Email, "Verifikasi Akun Anda",
+                //     $"Klik link berikut untuk verifikasi akun Anda: <a href='{verificationLink}'>Verifikasi</a>");
 
                 // Generate JWT token (optional, kalau mau auto login)
-                string token = _tokenService.GenerateToken(newUser);
+                // string token = _tokenService.GenerateToken(newUser);
 
-                _logger.LogInformation($"Register successful for email: {request.Email}, verification email sent.");
+                // _logger.LogInformation($"Register successful for email: {request.Email}, verification email sent.");
 
 
                 return Ok(new LoginResponse
@@ -191,7 +191,6 @@ namespace UserApi.Controllers
                         Username = newUser.Username,
                         LastLoginDate = DateTime.Now
                     },
-                    Token = token
                 });
             }
             catch (Exception ex)
@@ -312,8 +311,8 @@ namespace UserApi.Controllers
 
 
                 // kirim email
-                await _emailService.SendEmailAsync(user.Email, "Reset Password",
-                    $"Klik link berikut untuk reset password: <a href='{resetLink}'>Reset Password</a>");
+                await _emailService.SendPasswordResetEmailAsync(user.Email, user.Username, resetToken);
+
 
                 _logger.LogInformation($"Password reset email sent to {user.Email}");
 

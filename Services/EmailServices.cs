@@ -230,7 +230,7 @@ namespace UserApi.Services
             {
                 var subject = "Reset Password Anda - " + _appSettings.AppName;
                 var baseUrl = _appSettings.FrontendBaseUrl;
-                var resetLink = $"{baseUrl}/reset-password?token={resetToken}";
+                var resetLink = $"{baseUrl}/create-new-password?token={resetToken}";
                 
                 var htmlBody = $@"
                 <!DOCTYPE html>

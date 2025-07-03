@@ -152,14 +152,15 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // Diperlukan jika frontend dan backend di domain/port yang berbeda
 builder.Services.AddCors(options =>
 {
-    // AddDefaultPolicy = kebijakan CORS default
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()      // Boleh dari origin mana saja (untuk development)
-              .AllowAnyMethod()      // Boleh HTTP method apa saja (GET, POST, PUT, DELETE)
-              .AllowAnyHeader();     // Boleh header apa saja
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
+
 
 // =====================================
 // BUILD APPLICATION
