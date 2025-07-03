@@ -41,6 +41,12 @@ namespace InvoiceDetailApi.Models        // adjust namespace if needed
 
 
 
-
+    }
+    public class InvoiceDetailSummaryDto
+    {
+        public string ProductImageUrl { get; set; } = string.Empty;
+        public string ProductTypeName { get; set; } = string.Empty;
+        public string ProductName { get; set; } = string.Empty;
+        public DateTime? ScheduleTime { get; set; }
     }
 }

@@ -14,6 +14,10 @@ namespace InvoiceDetailApi.Data
         Task<uint> CreateAsync(DetailInvoice detail, CancellationToken ct = default);
         Task<int> CreateManyAsync(IEnumerable<DetailInvoice> details, CancellationToken ct = default);
         Task<List<DetailInvoice>> GetByInvoiceIdAsync(uint invoiceId, CancellationToken ct = default);
+
+        Task<List<InvoiceDetailSummaryDto>> GetByUserIdAsync(
+    uint userId, CancellationToken ct = default);
+
     }
 
     public class InvoiceDetailRepository : IInvoiceDetailRepository
@@ -163,5 +167,61 @@ WHERE  di.invoice_id = @InvoiceId;";
                     $"Failed to fetch detail_invoice rows for invoice {invoiceId}.", ex);
             }
         }
+
+        public async Task<List<InvoiceDetailSummaryDto>> GetByUserIdAsync(
+    uint userId, CancellationToken ct = default)
+        {
+            const string sql = @"
+SELECT  p.imageUrl     AS productImageUrl,
+        pt.name        AS productTypeName,
+        p.name         AS productName,
+        s.time         AS scheduleTime
+FROM    detail_invoice    di
+JOIN    invoice           i   ON i.id  = di.invoice_id
+                              AND i.user_id = @UserId          -- ← user filter
+JOIN    product           p   ON p.id  = di.product_id
+JOIN    producttype       pt  ON pt.id = p.productTypeId
+LEFT JOIN schedule        s   ON s.id  = di.schedule_id
+WHERE   s.time >= NOW()                                        -- ← upcoming only
+ORDER BY s.time;  ";
+
+            var list = new List<InvoiceDetailSummaryDto>();
+
+            await using var conn = new MySqlConnection(_connString);
+            await conn.OpenAsync(ct);
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@UserId", userId);
+
+            await using var rdr = (MySqlDataReader)await cmd.ExecuteReaderAsync(ct);
+            while (await rdr.ReadAsync(ct))
+            {
+                list.Add(new InvoiceDetailSummaryDto
+                {
+                    ProductImageUrl = rdr.IsDBNull("productImageUrl") ? string.Empty : rdr.GetString("productImageUrl"),
+                    ProductTypeName = rdr.GetString("productTypeName"),
+                    ProductName = rdr.GetString("productName"),
+                    ScheduleTime = rdr.IsDBNull("scheduleTime") ? null : rdr.GetDateTime("scheduleTime")
+                });
+            }
+            return list;
+        }
+
     }
+
+    internal static class MySqlDataReaderExtensions
+    {
+        public static uint GetUInt32(this MySqlDataReader rdr, string column) =>
+            rdr.GetUInt32(rdr.GetOrdinal(column));
+
+        public static int GetInt32(this MySqlDataReader rdr, string column) =>
+            rdr.GetInt32(rdr.GetOrdinal(column));
+
+        public static bool IsDBNull(this MySqlDataReader rdr, string column) =>
+            rdr.IsDBNull(rdr.GetOrdinal(column));
+    }
+
+
+
+
 }

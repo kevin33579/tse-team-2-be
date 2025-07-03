@@ -55,5 +55,21 @@ namespace YourApp.Controllers
                 });
             }
         }
+
+        // GET: api/InvoiceDetail/user/5
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<InvoiceDetailSummaryDto>>> GetByUser(uint userId, CancellationToken ct)
+        {
+            try
+            {
+                var rows = await _repo.GetByUserIdAsync(userId, ct);
+                return Ok(rows);
+            }
+            catch (DatabaseException ex)
+            {
+                return StatusCode(500, new { message = "Failed to fetch user invoice details.", error = ex.Message });
+            }
+        }
+
     }
 }
