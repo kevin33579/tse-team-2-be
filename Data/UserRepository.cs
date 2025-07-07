@@ -9,6 +9,8 @@ namespace UserApi.Data
     {
         Task<List<User>> GetAllProductsAsync();
         Task<User?> GetUserByEmailAsync(string email);
+        Task<User?> GetUserByIdAsync(int id);
+        Task<User?> DeleteUser(int id); // Delete user by ID
         Task<bool> CreateUserAsync(RegisterRequest request);
         Task<bool> UpdateLastLoginAsync(int id);
         Task<bool> EmailExistsAsync(string email);
@@ -94,6 +96,91 @@ namespace UserApi.Data
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@email", email);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new User
+                            {
+                                Id = reader.GetInt32(0),
+                                Email = reader.GetString(2),
+                                Username = reader.IsDBNull(1) ? null : reader.GetString(1),
+                                Password = reader.GetString(3),
+                                CreatedDate = reader.GetDateTime(5),
+                                LastLoginDate = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
+                                IsActive = reader.GetBoolean(7)
+                            };
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+        public async Task<User?> DeleteUser(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string selectQuery = @"SELECT id, username, email, password, roleId, createdDate
+                               FROM users WHERE id = @id";
+                User? userToDelete = null;
+
+                using (var selectCommand = new MySqlCommand(selectQuery, connection))
+                {
+                    selectCommand.Parameters.AddWithValue("@id", id);
+
+                    using (var reader = await selectCommand.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            userToDelete = new User
+                            {
+                                Id = reader.GetInt32("id"),
+                                Username = reader.GetString("username"),
+                                Email = reader.GetString("email"),
+                                Password = reader.GetString("password"),
+                                RoleID = reader.GetInt32("roleId"),
+                                CreatedDate = reader.GetDateTime("createdDate")
+                            };
+                        }
+                    }
+                }
+
+                if (userToDelete == null)
+                {
+                    return null; // tidak ada user yang cocok
+                }
+
+                string deleteQuery = @"DELETE FROM users WHERE id = @id";
+                using (var deleteCommand = new MySqlCommand(deleteQuery, connection))
+                {
+                    deleteCommand.Parameters.AddWithValue("@id", id);
+
+                    await deleteCommand.ExecuteNonQueryAsync();
+                }
+
+                return userToDelete;
+            }
+        }
+
+
+        public async Task<User?> GetUserByIdAsync(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                string query = @"
+                    SELECT * 
+                    FROM users 
+                    WHERE id = @id";
+
+                using (var command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@id", id);
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
@@ -297,6 +384,13 @@ namespace UserApi.Data
             }
         }
 
+        /*************  ✨ Windsurf Command ⭐  *************/
+        /// <summary>
+        /// Update the password reset token for the given user ID.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
+        /// <returns>The new password reset token.</returns>
+        /*******  bcf19c9a-46a5-4f39-a899-2ae27efc03ea  *******/
         public async Task<string> UpdatePasswordResetTokenAsync(int id)
         {
             using (var connection = new MySqlConnection(_connectionString))
