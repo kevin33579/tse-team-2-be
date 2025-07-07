@@ -19,6 +19,7 @@ namespace ProductApi.Controllers
             _logger = logger;
         }
 
+
         [HttpGet]
         public async Task<ActionResult<ApiResult<List<Product>>>> GetProducts()
         {
@@ -34,6 +35,29 @@ namespace ProductApi.Controllers
                 return StatusCode(500, ApiResult<List<Product>>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
+
+        // GET: api/Products/limit
+        [HttpGet("limit")]
+        public async Task<ActionResult<ApiResult<List<ProductDto>>>> GetLimitedProducts()
+        {
+            try
+            {
+                _logger.LogInformation("Mengambil 6 produk teratas (limit)");
+
+                var products = await _productRepository.GetAllProductLimitsAsync();
+
+                return Ok(ApiResult<List<ProductDto>>
+                          .SuccessResult(products, "Produk berhasil diambil"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saat mengambil produk (limit)");
+                return StatusCode(500,
+                    ApiResult<List<ProductDto>>
+                    .ErrorResult("Terjadi kesalahan server", 500));
+            }
+        }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResult<ProductDto>>> GetProduct(int id)

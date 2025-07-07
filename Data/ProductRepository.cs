@@ -12,7 +12,7 @@ namespace ProductApi.Data
         Task<ProductDto?> GetProductByIdAsync(int id);                                        // READ - Get by ID  
         Task<List<ProductDto>> GetProductsByTypeIdAsync(int productTypeId);                  // READ - Get by ProductType ID
         Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
-
+        Task<List<ProductDto>> GetAllProductLimitsAsync();
         Task<int> CreateProductAsync(Product product);                                     // CREATE - Return new ID
         Task<bool> UpdateProductAsync(Product product);                                    // UPDATE - Return success status
         Task<bool> DeleteProductAsync(int id);
@@ -29,6 +29,57 @@ namespace ProductApi.Data
         }
 
         public async Task<List<ProductDto>> GetAllProductsAsync()
+        {
+            var products = new List<ProductDto>();
+
+            try
+            {
+                using (var connection = new MySqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    string queryString = @"
+        SELECT  p.id,
+                p.name,
+                p.price,
+                p.stock,
+                p.description,
+                p.imageUrl,
+                p.productTypeId,
+                pt.name AS productTypeName          -- ① alias persis!
+        FROM    product p
+        LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
+               ON pt.id = p.productTypeId
+        ORDER BY p.name ;";
+                    using (var command = new MySqlCommand(queryString, connection))
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var product = new ProductDto
+                            {
+                                id = reader.GetInt32("id"),
+                                name = reader.GetString("name"),
+                                price = reader.GetDecimal("price"),
+                                stock = reader.GetInt32("stock"),
+                                description = reader.IsDBNull("description") ? null : reader.GetString("description"),
+                                productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
+                                imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
+                                productTypeName = reader.GetString("productTypeName")
+                            };
+                            products.Add(product);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("SELECT", "Gagal mengambil data produk", ex);
+            }
+
+            return products;
+        }
+
+        public async Task<List<ProductDto>> GetAllProductLimitsAsync()
         {
             var products = new List<ProductDto>();
 
