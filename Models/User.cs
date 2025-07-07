@@ -42,12 +42,16 @@ namespace UserApi.Models
                 public string Message { get; set; } = string.Empty;
                 public UserInfo? User { get; set; }
                 public string? Token { get; set; }
+
         }
         public class UserInfo
         {
                 public int UserID { get; set; }
                 public string Email { get; set; } = string.Empty;
                 public string? Username { get; set; }
+
+                public string? RoleName { get; set; }
+
                 public DateTime? LastLoginDate { get; set; }
         }
 

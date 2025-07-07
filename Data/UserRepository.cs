@@ -12,6 +12,7 @@ namespace UserApi.Data
         Task<bool> CreateUserAsync(RegisterRequest request);
         Task<bool> UpdateLastLoginAsync(int id);
         Task<bool> EmailExistsAsync(string email);
+        Task<(User user, string roleName)?> GetUserWithRoleByEmailAsync(string email);
 
         Task<bool> VerifyUserEmailAsync(int id);
         Task<bool> VerifyEmailAsync(string token); // Verify by token
@@ -115,6 +116,48 @@ namespace UserApi.Data
 
             return null;
         }
+
+        // inside UserRepository
+        public async Task<(User user, string roleName)?> GetUserWithRoleByEmailAsync(string email)
+        {
+            const string sql = @"
+        SELECT  u.id, u.username, u.email, u.password, u.createdDate,
+                u.lastLoginDate, u.isActive, u.roleId,
+                r.name AS roleName
+        FROM    users u
+        JOIN    roles r ON r.id = u.roleId        -- 🔗 join to roles
+        WHERE   u.email = @email
+          AND   u.isActive = 1
+        LIMIT 1;";
+
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@email", email);
+
+            await using var rdr = (MySqlDataReader)await cmd.ExecuteReaderAsync();
+            if (await rdr.ReadAsync())
+            {
+                var user = new User
+                {
+                    Id = rdr.GetInt32("id"),
+                    Username = rdr.IsDBNull("username") ? null : rdr.GetString("username"),
+                    Email = rdr.GetString("email"),
+                    Password = rdr.GetString("password"),
+                    RoleID = rdr.GetInt32("roleId"),
+                    CreatedDate = rdr.GetDateTime("createdDate"),
+                    LastLoginDate = rdr.IsDBNull("lastLoginDate") ? null : rdr.GetDateTime("lastLoginDate"),
+                    IsActive = rdr.GetBoolean("isActive")
+                };
+
+                string roleName = rdr.GetString("roleName");
+                return (user, roleName);
+            }
+
+            return null;
+        }
+
 
         public async Task<bool> CreateUserAsync(RegisterRequest request)
         {

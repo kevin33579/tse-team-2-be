@@ -38,52 +38,38 @@ namespace UserApi.Controllers
         {
             try
             {
-                _logger.LogInformation($"Login attempt for email: {request.Email}");
+                _logger.LogInformation("Login attempt for email: {Email}", request.Email);
 
-                // Validasi input
+                // 1. validate payload
                 if (!ModelState.IsValid)
+                    return BadRequest(new LoginResponse { Success = false, Message = "Data tidak valid" });
+
+                // 2. fetch user + role
+                var result = await _userRepository.GetUserWithRoleByEmailAsync(request.Email);
+                if (result == null)
                 {
-                    return BadRequest(new LoginResponse
-                    {
-                        Success = false,
-                        Message = "Data tidak valid"
-                    });
+                    _logger.LogWarning("Login failed: user not found for {Email}", request.Email);
+                    return Unauthorized(new LoginResponse { Success = false, Message = "Email atau password salah" });
                 }
 
-                // Cari user berdasarkan email
-                var user = await _userRepository.GetUserByEmailAsync(request.Email);
+                var (user, roleName) = result.Value;
 
-                if (user == null)
-                {
-                    _logger.LogWarning($"Login failed: User not found for email {request.Email}");
-                    return Unauthorized(new LoginResponse
-                    {
-                        Success = false,
-                        Message = "Email atau password salah"
-                    });
-                }
-                _logger.LogInformation($"user.Password: {user.Password}");
-                _logger.LogInformation($"request.Password: {request.Password}");
-
-                // Verifikasi password
+                // 3. verify password
                 if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 {
-                    _logger.LogWarning($"Login failed: Invalid password for email {request.Email}");
-                    return Unauthorized(new LoginResponse
-                    {
-                        Success = false,
-                        Message = "Email atau password salah"
-                    });
+                    _logger.LogWarning("Login failed: wrong password for {Email}", request.Email);
+                    return Unauthorized(new LoginResponse { Success = false, Message = "Email atau password salah" });
                 }
 
-                // Update last login date
+                // 4. touch last‑login
                 await _userRepository.UpdateLastLoginAsync(user.Id);
 
-                // Generate JWT
+                // 5. generate JWT (add role to claims if your service supports it)
                 string token = _tokenService.GenerateToken(user);
 
-                _logger.LogInformation($"Login successful for email: {request.Email}");
+                _logger.LogInformation("Login successful for {Email}", request.Email);
 
+                // 6. success response
                 return Ok(new LoginResponse
                 {
                     Success = true,
@@ -93,21 +79,19 @@ namespace UserApi.Controllers
                         UserID = user.Id,
                         Email = user.Email,
                         Username = user.Username,
-                        LastLoginDate = DateTime.Now
+                        LastLoginDate = DateTime.Now,
+                        RoleName = roleName       // ← new field
                     },
                     Token = token
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error during login for email: {request.Email}");
-                return StatusCode(500, new LoginResponse
-                {
-                    Success = false,
-                    Message = "Terjadi kesalahan server"
-                });
+                _logger.LogError(ex, "Error during login for {Email}", request.Email);
+                return StatusCode(500, new LoginResponse { Success = false, Message = "Terjadi kesalahan server" });
             }
         }
+
 
         /// <summary>
         /// Register user baru
