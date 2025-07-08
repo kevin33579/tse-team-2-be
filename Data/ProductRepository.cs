@@ -49,7 +49,7 @@ namespace ProductApi.Data
         FROM    product p
         LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
                ON pt.id = p.productTypeId
-        ORDER BY p.name ;";
+        ORDER BY p.id ;";
                     using (var command = new MySqlCommand(queryString, connection))
                     using (var reader = await command.ExecuteReaderAsync())
                     {
