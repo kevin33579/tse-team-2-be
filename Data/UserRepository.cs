@@ -9,6 +9,8 @@ namespace UserApi.Data
     {
         Task<List<User>> GetAllProductsAsync();
         Task<User?> GetUserByEmailAsync(string email);
+
+        Task<List<User>> GetAllUsersAsync();
         Task<User?> GetUserByIdAsync(int id);
         Task<User?> DeleteUser(int id); // Delete user by ID
         Task<bool> CreateUserAsync(RegisterRequest request);
@@ -35,6 +37,50 @@ namespace UserApi.Data
             _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
+
+        // ─────────────────────────────────────────────────────────────
+        // Get every user and include the role name   (JOIN roles)
+        // ─────────────────────────────────────────────────────────────
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            const string sql = @"
+        SELECT  u.id,
+                u.username,
+                u.email,
+                u.password,
+                u.roleId,
+                r.name       AS roleName,
+                u.createdDate,
+                u.lastLoginDate,
+                u.isActive
+        FROM    users u
+        JOIN    roles r ON r.id = u.roleId";
+
+            var list = new List<User>();
+
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            await using var rdr = (MySqlDataReader)await cmd.ExecuteReaderAsync();
+            while (await rdr.ReadAsync())
+            {
+                list.Add(new User
+                {
+                    Id = rdr.GetInt32("id"),
+                    Username = rdr.IsDBNull("username") ? null : rdr.GetString("username"),
+                    Email = rdr.GetString("email"),
+                    Password = rdr.GetString("password"),
+                    RoleID = rdr.GetInt32("roleId"),
+                    RoleName = rdr.GetString("roleName"),   // ← added
+                    CreatedDate = rdr.GetDateTime("createdDate"),
+                    LastLoginDate = rdr.IsDBNull("lastLoginDate") ? null : rdr.GetDateTime("lastLoginDate"),
+                    IsActive = rdr.GetBoolean("isActive")
+                });
+            }
+            return list;
+        }
+
         public async Task<List<User>> GetAllProductsAsync()
         {
             var users = new List<User>();

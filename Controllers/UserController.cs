@@ -16,13 +16,15 @@ namespace UserApi.Controllers
             _userRepository = userRepository;
         }
 
+
+
         // GET: api/users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             try
             {
-                var users = await _userRepository.GetAllProductsAsync();
+                var users = await _userRepository.GetAllUsersAsync();
                 return Ok(users);
             }
             catch (Exception ex)
@@ -30,6 +32,8 @@ namespace UserApi.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+
         // GET: api/users/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUserById(int id)
@@ -58,7 +62,7 @@ namespace UserApi.Controllers
                 if (user == null)
                 {
                     return NotFound($"User with ID {id} not found.");   // 404
-                }        
+                }
                 await _userRepository.DeleteUser(id);
                 return NoContent();
             }

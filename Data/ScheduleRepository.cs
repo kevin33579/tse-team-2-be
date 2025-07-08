@@ -12,10 +12,10 @@ namespace ScheduleApi.Data
     public interface IScheduleRepository
     {
         Task<List<Schedule>> GetAllAsync();
-        Task<Schedule?>      GetByIdAsync(int id);
-        Task<int>            CreateAsync(Schedule schedule);   // returns new Id
-        Task<bool>           UpdateAsync(Schedule schedule);   // returns true if row updated
-        Task<bool>           DeleteAsync(int id);              // returns true if row deleted
+        Task<Schedule?> GetByIdAsync(int id);
+        Task<int> CreateAsync(Schedule schedule);   // returns new Id
+        Task<bool> UpdateAsync(Schedule schedule);   // returns true if row updated
+        Task<bool> DeleteAsync(int id);              // returns true if row deleted
     }
 
     /* ---------- Implementation ---------- */
@@ -40,13 +40,13 @@ namespace ScheduleApi.Data
             const string query = @"SELECT id, time FROM schedule";
 
             using var command = new MySqlCommand(query, connection);
-            using var reader  = await command.ExecuteReaderAsync();
+            using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
                 schedules.Add(new Schedule
                 {
-                    Id   = reader.GetInt32("id"),
+                    Id = reader.GetInt32("id"),
                     Time = reader.GetDateTime("time")
                 });
             }
@@ -71,7 +71,7 @@ namespace ScheduleApi.Data
             {
                 return new Schedule
                 {
-                    Id   = reader.GetInt32("id"),
+                    Id = reader.GetInt32("id"),
                     Time = reader.GetDateTime("time")
                 };
             }
@@ -85,10 +85,10 @@ namespace ScheduleApi.Data
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            const string query = @"INSERT INTO schedule (time) VALUES (@time);";
+            const string query = @"INSERT INTO schedule (`time`) VALUES (@time);";
 
             using var command = new MySqlCommand(query, connection);
-            command.Parameters.AddWithValue("@time", schedule.Time);
+            command.Parameters.Add("@time", MySqlDbType.DateTime).Value = schedule.Time;
 
             await command.ExecuteNonQueryAsync();
 
@@ -106,7 +106,7 @@ namespace ScheduleApi.Data
 
             using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@time", schedule.Time);
-            command.Parameters.AddWithValue("@id",   schedule.Id);
+            command.Parameters.AddWithValue("@id", schedule.Id);
 
             int rows = await command.ExecuteNonQueryAsync();
             return rows > 0;

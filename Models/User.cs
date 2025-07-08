@@ -15,6 +15,8 @@ namespace UserApi.Models
                 public required string Email { get; set; }
                 public int RoleID { get; set; }
 
+                public string RoleName { get; set; }
+
                 public DateTime CreatedDate { get; set; } = DateTime.Now;
                 public DateTime? LastLoginDate { get; set; }
                 public bool IsActive { get; set; } = true;
