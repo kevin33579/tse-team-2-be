@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using UserApi.Data;
 using UserApi.Models;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace UserApi.Controllers
 {
@@ -20,6 +22,7 @@ namespace UserApi.Controllers
 
         // GET: api/users
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             try
@@ -54,6 +57,7 @@ namespace UserApi.Controllers
         }
         // Delete: api/users/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try

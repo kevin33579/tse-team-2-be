@@ -65,7 +65,7 @@ namespace UserApi.Controllers
                 await _userRepository.UpdateLastLoginAsync(user.Id);
 
                 // 5. generate JWT (add role to claims if your service supports it)
-                string token = _tokenService.GenerateToken(user);
+                string token = _tokenService.GenerateToken(user,roleName);
 
                 _logger.LogInformation("Login successful for {Email}", request.Email);
 
