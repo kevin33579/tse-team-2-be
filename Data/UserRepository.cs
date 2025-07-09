@@ -25,6 +25,8 @@ namespace UserApi.Data
         Task<User?> GetUserByPasswordResetTokenAsync(string token);
         Task<bool> UpdatePasswordAndClearResetTokenAsync(int id, string newHashedPassword);
 
+        Task<bool> DeactivateUserAsync(int userId);
+
     }
 
     public class UserRepository : IUserRepository
@@ -37,6 +39,25 @@ namespace UserApi.Data
             _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
+
+        public async Task<bool> DeactivateUserAsync(int userId)
+        {
+            const string sql = @"UPDATE users SET isActive = 0 WHERE id = @id";
+
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", userId);
+
+            int affectedRows = await cmd.ExecuteNonQueryAsync();
+
+            return affectedRows > 0;
+        }
+
+
+
+
 
         // ─────────────────────────────────────────────────────────────
         // Get every user and include the role name   (JOIN roles)
@@ -54,7 +75,9 @@ namespace UserApi.Data
                 u.lastLoginDate,
                 u.isActive
         FROM    users u
-        JOIN    roles r ON r.id = u.roleId";
+        JOIN    roles r ON r.id = u.roleId
+         WHERE   u.isActive = 1
+        ";
 
             var list = new List<User>();
 
@@ -530,5 +553,7 @@ namespace UserApi.Data
                 }
             }
         }
+
+
     }
 }

@@ -36,6 +36,19 @@ namespace UserApi.Controllers
             }
         }
 
+        [HttpPut("deactivate/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeactivateUser(int id)
+        {
+            var result = await _userRepository.DeactivateUserAsync(id);
+
+            if (!result)
+                return NotFound(new { message = "User not found or already deactivated" });
+
+            return Ok(new { message = "User deactivated successfully" });
+        }
+
+
 
         // GET: api/users/{id}
         [HttpGet("{id}")]
