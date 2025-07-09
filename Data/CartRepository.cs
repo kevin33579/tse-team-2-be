@@ -34,9 +34,22 @@ namespace CartApi.Data
         public async Task<List<Cart>> GetCartsByUserAsync(uint userId, CancellationToken ct = default)
         {
             const string sql = @"
-        SELECT id, user_id, product_id, schedule_id, quantity
-        FROM carts
-        WHERE user_id = @userId;";
+SELECT  c.id,
+        c.user_id,
+        c.product_id,
+        c.schedule_id,
+        c.quantity,
+
+        s.time              AS scheduleTime,
+        p.name              AS productName,
+        p.imageUrl          AS productImageUrl, 
+         p.price             AS productPrice,  
+        pt.name             AS productTypeName
+FROM    carts c
+JOIN    product       p  ON p.id  = c.product_id
+JOIN    producttype   pt ON pt.id = p.productTypeId
+LEFT JOIN schedule     s ON s.id  = c.schedule_id
+WHERE   c.user_id = @userId";
 
             var carts = new List<Cart>();
 
@@ -57,7 +70,14 @@ namespace CartApi.Data
                     UserId = reader.GetUInt32("user_id"),
                     ProductId = reader.GetUInt32("product_id"),
                     ScheduleId = reader.IsDBNull("schedule_id") ? null : reader.GetUInt32("schedule_id"),
-                    Quantity = reader.GetInt32("quantity")
+                    Quantity = reader.GetInt32("quantity"),
+                    ScheduleTime = reader.IsDBNull("scheduleTime")
+                            ? (DateTime?)null
+                            : reader.GetDateTime("scheduleTime"),
+                    ProductName = reader.GetString("productName"),
+                    ProductTypeName = reader.GetString("productTypeName"),
+                    ProductImageUrl = reader.IsDBNull("productImageUrl") ? null : reader.GetString("productImageUrl"),
+                    ProductPrice = reader.GetDecimal("productPrice")
                 });
             }
 

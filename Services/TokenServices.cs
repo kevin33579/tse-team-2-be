@@ -8,7 +8,7 @@ namespace ProductApi.Services
 {
     public interface ITokenService
     {
-        string GenerateToken(User user);
+        string GenerateToken(User user, string roleName);
     }
 
     public class TokenService : ITokenService
@@ -20,7 +20,7 @@ namespace ProductApi.Services
             _configuration = configuration;
         }
 
-        public string GenerateToken(User user)
+        public string GenerateToken(User user, string roleName)
         {
             var jwtKey = _configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key not found in configuration");
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -30,7 +30,8 @@ namespace ProductApi.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("Id", user.Id.ToString())
+                new Claim("Id", user.Id.ToString()),
+                new Claim(ClaimTypes.Role, roleName),
             };
 
             var token = new JwtSecurityToken(

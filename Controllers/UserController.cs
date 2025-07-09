@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using UserApi.Data;
 using UserApi.Models;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace UserApi.Controllers
 {
@@ -16,14 +18,57 @@ namespace UserApi.Controllers
             _userRepository = userRepository;
         }
 
+
+
         // GET: api/users
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             try
             {
-                var users = await _userRepository.GetAllProductsAsync();
+                var users = await _userRepository.GetAllUsersAsync();
                 return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+        // GET: api/users/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<User>> GetUserById(int id)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound($"User with ID {id} not found.");   // 404
+                }
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        // Delete: api/users/{id}
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound($"User with ID {id} not found.");   // 404
+                }
+                await _userRepository.DeleteUser(id);
+                return NoContent();
             }
             catch (Exception ex)
             {

@@ -39,7 +39,8 @@ namespace ScheduleApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Schedule>> CreateAsync([FromBody] Schedule schedule)
         {
-            if (schedule is null) return BadRequest();
+            if (schedule is null || !ModelState.IsValid)
+                return BadRequest("Schedule payload is invalid.");
 
             int newId = await _repository.CreateAsync(schedule);
             schedule.Id = newId;

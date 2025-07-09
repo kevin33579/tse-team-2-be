@@ -8,6 +8,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ProductApi.Services;
+using ScheduleApi.Data;
+using CartApi.Data;
+using PaymentApi.Data;
+using PaymentApi.Models;
+using ProductApi.Services;
+using UserApi.Services;
+using Microsoft.Extensions.Options;
+using InvoiceApi.Data;
+using InvoiceDetailApi.Data;
+
 // =====================================
 // BUILDER PATTERN - Konfigurasi Services
 // =====================================
@@ -102,6 +112,11 @@ builder.Services.AddAuthentication(options =>
 // Configure strongly typed settings objects
 builder.Services.Configure<AppSettings>(
     builder.Configuration.GetSection("AppSettings"));
+
+builder.Services.AddSingleton(resolver =>
+    resolver.GetRequiredService<IOptions<AppSettings>>().Value
+);
+
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<SecuritySettings>(
@@ -116,10 +131,19 @@ builder.Services.Configure<FileUploadSettings>(
 // Scoped = 1 instance per HTTP request
 // IProductRepository akan di-resolve ke ProductRepository
 // Setiap kali controller butuh IProductRepository, DI container akan provide ProductRepository instance
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
+
+builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IInvoiceDetailRepository, InvoiceDetailRepository>();
+
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // =====================================
 // CORS CONFIGURATION
@@ -128,14 +152,15 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 // Diperlukan jika frontend dan backend di domain/port yang berbeda
 builder.Services.AddCors(options =>
 {
-    // AddDefaultPolicy = kebijakan CORS default
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()      // Boleh dari origin mana saja (untuk development)
-              .AllowAnyMethod()      // Boleh HTTP method apa saja (GET, POST, PUT, DELETE)
-              .AllowAnyHeader();     // Boleh header apa saja
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
+
 
 // =====================================
 // BUILD APPLICATION
@@ -172,6 +197,7 @@ app.UseCors();
 
 // UseAuthorization() = middleware untuk authorization/authentication
 // Meskipun belum implement auth, disimpan untuk future implementation
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 // MapControllers() = mapping route ke controller actions
