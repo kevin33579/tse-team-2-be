@@ -11,8 +11,6 @@ using ProductApi.Services;
 using ScheduleApi.Data;
 using CartApi.Data;
 using PaymentApi.Data;
-using PaymentApi.Models;
-using ProductApi.Services;
 using UserApi.Services;
 using Microsoft.Extensions.Options;
 using InvoiceApi.Data;
@@ -145,6 +143,7 @@ builder.Services.AddScoped<IInvoiceDetailRepository, InvoiceDetailRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+
 // =====================================
 // CORS CONFIGURATION
 // =====================================
@@ -197,7 +196,7 @@ app.UseCors();
 
 // UseAuthorization() = middleware untuk authorization/authentication
 // Meskipun belum implement auth, disimpan untuk future implementation
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
 // MapControllers() = mapping route ke controller actions
