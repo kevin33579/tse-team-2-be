@@ -197,6 +197,7 @@ app.UseCors();
 
 // UseAuthorization() = middleware untuk authorization/authentication
 // Meskipun belum implement auth, disimpan untuk future implementation
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 // MapControllers() = mapping route ke controller actions
