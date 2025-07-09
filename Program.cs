@@ -1,27 +1,5 @@
 // Import namespace untuk ProductRepository
 using UserApi.Data;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 69e4304 (a)
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
->>>>>>> 00b6af1 (User)
-<<<<<<< HEAD
->>>>>>> 75190de (User)
-=======
-=======
->>>>>>> 0cb494c (a)
->>>>>>> 69e4304 (a)
-=======
->>>>>>> e792068 (add to cart)
-=======
->>>>>>> 9cbec9e (commit)
 using ProductApi.Data;
 using ProductTypeApi.Data;
 using ProductApi.Configuration;
