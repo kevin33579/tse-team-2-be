@@ -247,6 +247,19 @@ ALTER TABLE detail_invoice
 INSERT INTO detail_invoice (invoice_id, product_id,schedule_id)
 VALUES (1, 1,1);
 
+CREATE TABLE product_schedule (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    schedule_id INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (schedule_id) REFERENCES schedule(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+INSERT INTO product_schedule (product_id, schedule_id) VALUES
+(1, 1),
+(1, 2),
+(3, 1);
+
 
 
 

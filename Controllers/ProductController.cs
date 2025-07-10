@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ProductApi.Data;
 using ProductApi.Models;
+using ScheduleApi.Models;
+using ScheduleApi.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 
@@ -10,15 +12,17 @@ namespace ProductApi.Controllers
 {
     [ApiController]
     [Route("api/products")]
-    
+
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
+        private readonly IScheduleRepository _scheduleRepository;
         private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(IProductRepository productRepository, ILogger<ProductsController> logger)
+        public ProductsController(IProductRepository productRepository,IScheduleRepository scheduleRepository, ILogger<ProductsController> logger)
         {
             _productRepository = productRepository;
+            _scheduleRepository = scheduleRepository;
             _logger = logger;
         }
 
@@ -38,6 +42,26 @@ namespace ProductApi.Controllers
                 return StatusCode(500, ApiResult<List<Product>>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
+        // GET: api/products/id/schedules
+        [HttpGet("{id}/schedules")]
+        public async Task<ActionResult<ApiResult<List<Schedule>>>> GetScheduleByProduct(int id)
+        {
+            try
+            {
+                var schedules = await _productRepository.GetSchedulesByProductIdAsync(id);
+
+                if (schedules == null || !schedules.Any())
+                    return NotFound(ApiResult<List<Schedule>>.ErrorResult("Jadwal tidak ditemukan untuk produk ini", 404));
+
+                return Ok(ApiResult<List<Schedule>>.SuccessResult(schedules, "Jadwal berhasil diambil"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Gagal mengambil jadwal untuk produk dengan ID {ProductId}", id);
+                return StatusCode(500, ApiResult<List<Schedule>>.ErrorResult("Terjadi kesalahan server", 500));
+            }
+        }
+
 
         // GET: api/Products/limit
         [HttpGet("limit")]

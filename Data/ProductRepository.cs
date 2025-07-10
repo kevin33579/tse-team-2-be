@@ -2,6 +2,8 @@ using System.Data; // DataSet, DataRow, DataNulll
 using MySql.Data.MySqlClient; // MySqlConnection, MySqlCommand, MySqlDataAdapter
 using ProductApi.Models; // Product
 using ProductApi.Exceptions;
+using ScheduleApi.Models; // Schedule
+using ScheduleApi.Data; // IScheduleRepository
 
 
 namespace ProductApi.Data
@@ -14,7 +16,9 @@ namespace ProductApi.Data
         Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
         Task<List<ProductDto>> GetAllProductLimitsAsync();
         Task<int> CreateProductAsync(Product product);                                     // CREATE - Return new ID
-        Task<bool> UpdateProductAsync(Product product);                                    // UPDATE - Return success status
+        Task<bool> UpdateProductAsync(Product product);
+        Task<List<Schedule>> GetSchedulesByProductIdAsync(int productId);
+        // UPDATE - Return success status
         Task<bool> DeleteProductAsync(int id);
     }
 
@@ -129,6 +133,35 @@ namespace ProductApi.Data
 
             return products;
         }
+        public async Task<List<Schedule>> GetSchedulesByProductIdAsync(int productId)
+        {
+            var schedules = new List<Schedule>();
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var query = @"
+        SELECT s.id, s.time
+        FROM schedule s
+        JOIN product_schedule ps ON s.id = ps.schedule_id
+        WHERE ps.product_id = @productId;
+    ";
+
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddWithValue("@productId", productId);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                schedules.Add(new Schedule
+                {
+                    Id = reader.GetInt32("Id"),
+                    Time = reader.GetDateTime("Time")
+                });
+            }
+
+            return schedules;
+        }
+
 
         public async Task<ProductDto?> GetProductByIdAsync(int id)
         {
