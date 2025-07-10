@@ -10,6 +10,10 @@ namespace PaymentApi.Data
     public interface IPaymentMethodRepository
     {
         Task<List<PaymentMethod>> GetAllAsync(CancellationToken ct = default);
+        Task<PaymentMethod> CreatePaymentMethodAsync(PaymentMethod paymentMethod, CancellationToken ct = default);
+        Task<PaymentMethod> UpdatePaymentMethodAsync(PaymentMethod paymentMethod, CancellationToken ct = default);
+        Task DeletePaymentMethodAsync(uint id, CancellationToken ct = default);
+
     }
 
     public class PaymentMethodRepository : IPaymentMethodRepository
@@ -54,5 +58,85 @@ namespace PaymentApi.Data
                     "Gagal mengambil data payment_method", ex);
             }
         }
+        public async Task<PaymentMethod> CreatePaymentMethodAsync(PaymentMethod paymentMethod, CancellationToken ct = default)
+        {
+            const string sql = @"INSERT INTO paymentMethod (name, imageUrl) 
+                                 VALUES (@name, @imageUrl);
+                                 SELECT LAST_INSERT_ID();";
+
+            try
+            {
+                await using var conn = new MySqlConnection(_connString);
+                await conn.OpenAsync(ct);
+
+                await using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@name", paymentMethod.Name);
+                cmd.Parameters.AddWithValue("@imageUrl", paymentMethod.ImageUrl ?? string.Empty);
+
+                // ──► Cast to MySqlDataReader to use GetUInt32("id") helpers
+                var id = Convert.ToUInt32(await cmd.ExecuteScalarAsync(ct));
+
+                paymentMethod.Id = id;
+                return paymentMethod;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("INSERT",
+                    "Gagal menambahkan data payment_method", ex);
+            }
+        }
+        public async Task<PaymentMethod> UpdatePaymentMethodAsync(PaymentMethod paymentMethod, CancellationToken ct = default)
+        {
+            const string sql = @"UPDATE paymentMethod 
+                                 SET name = @name, imageUrl = @imageUrl 
+                                 WHERE id = @id;";
+
+            try
+            {
+                await using var conn = new MySqlConnection(_connString);
+                await conn.OpenAsync(ct);
+
+                await using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@id", paymentMethod.Id);
+                cmd.Parameters.AddWithValue("@name", paymentMethod.Name);
+                cmd.Parameters.AddWithValue("@imageUrl", paymentMethod.ImageUrl ?? string.Empty);
+
+                var rowsAffected = await cmd.ExecuteNonQueryAsync(ct);
+                if (rowsAffected == 0)
+                    throw new DatabaseException("UPDATE",
+                        "Tidak ada baris yang diperbarui. Mungkin ID tidak ditemukan.");
+
+                return paymentMethod;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("UPDATE",
+                    "Gagal memperbarui data payment_method", ex);
+            }
+        }
+        public async Task DeletePaymentMethodAsync(uint id, CancellationToken ct = default)
+        {
+            const string sql = @"DELETE FROM paymentMethod WHERE id = @id;";
+
+            try
+            {
+                await using var conn = new MySqlConnection(_connString);
+                await conn.OpenAsync(ct);
+
+                await using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@id", id);
+
+                var rowsAffected = await cmd.ExecuteNonQueryAsync(ct);
+                if (rowsAffected == 0)
+                    throw new DatabaseException("DELETE",
+                        "Tidak ada baris yang dihapus. Mungkin ID tidak ditemukan.");
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("DELETE",
+                    "Gagal menghapus data payment_method", ex);
+            }
+        }
     }
+
 }
