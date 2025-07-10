@@ -17,6 +17,7 @@ namespace UserApi.Data
         Task<bool> UpdateLastLoginAsync(int id);
         Task<bool> EmailExistsAsync(string email);
         Task<(User user, string roleName)?> GetUserWithRoleByEmailAsync(string email);
+        Task<List<User>> SearchUsersAsync(string? searchTerm);
 
         Task<bool> VerifyUserEmailAsync(int id);
         Task<bool> VerifyEmailAsync(string token); // Verify by token
@@ -290,6 +291,48 @@ namespace UserApi.Data
 
             return null;
         }
+
+        public async Task<List<User>> SearchUsersAsync(string? searchTerm)
+        {
+            var users = new List<User>();
+
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            string query = @"
+        SELECT u.id, u.username, u.email, u.password, u.roleId,
+               r.name AS roleName,
+               u.createdDate, u.lastLoginDate, u.isActive
+        FROM users u
+        JOIN roles r ON u.roleId = r.id
+        WHERE (@searchTerm IS NULL OR u.username LIKE @searchPattern OR u.email LIKE @searchPattern)
+        ORDER BY u.createdDate DESC;
+    ";
+
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@searchTerm", string.IsNullOrWhiteSpace(searchTerm) ? DBNull.Value : searchTerm);
+            command.Parameters.AddWithValue("@searchPattern", $"%{searchTerm}%");
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                users.Add(new User
+                {
+                    Id = reader.GetInt32("id"),
+                    Username = reader.IsDBNull("username") ? null : reader.GetString("username"),
+                    Email = reader.GetString("email"),
+                    Password = reader.GetString("password"),
+                    RoleID = reader.GetInt32("roleId"),
+                    RoleName = reader.GetString("roleName"),
+                    CreatedDate = reader.GetDateTime("createdDate"),
+                    LastLoginDate = reader.IsDBNull("lastLoginDate") ? null : reader.GetDateTime("lastLoginDate"),
+                    IsActive = reader.GetBoolean("isActive")
+                });
+            }
+
+            return users;
+        }
+
 
 
         public async Task<bool> CreateUserAsync(RegisterRequest request)
