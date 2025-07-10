@@ -25,6 +25,13 @@ namespace ProductTypeApi.Controllers
             return Ok(items);
         }
 
+        [HttpGet("Admin")]
+        public async Task<ActionResult<IEnumerable<ProductType>>> GetAllAdmin()
+        {
+            var items = await _repo.GetAllProductTypesAsyncAdmin();
+            return Ok(items);
+        }
+
         /*───────────────────────────────────────────────────────────*
          * GET: api/ProductTypes/5
          *    (requires a repo method that fetches by Id; see note)
@@ -33,7 +40,7 @@ namespace ProductTypeApi.Controllers
         public async Task<ActionResult<ProductType>> GetById(int id)
         {
             // If you add GetProductTypeByIdAsync to the repo, use that here.
-            var item = (await _repo.GetAllProductTypesAsync())
+            var item = (await _repo.GetAllProductTypesAsyncAdmin())
                        .FirstOrDefault(p => p.Id == id);
 
             if (item is null) return NotFound();
@@ -50,8 +57,8 @@ namespace ProductTypeApi.Controllers
             if (string.IsNullOrWhiteSpace(dto.Name))
                 return BadRequest("Name is required.");
 
-            var newId       = await _repo.CreateProductTypeAsync(dto);
-            dto.Id          = newId;         // echo new key
+            var newId = await _repo.CreateProductTypeAsync(dto);
+            dto.Id = newId;         // echo new key
 
 
             // Returns 201 + Location header
