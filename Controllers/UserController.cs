@@ -88,5 +88,27 @@ namespace UserApi.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        // GET: api/users/search?query=...
+        [HttpGet("search")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<User>>> SearchUsers([FromQuery] string? query)
+        {
+            try
+            {
+                var users = await _userRepository.SearchUsersAsync(query);
+
+                if (users == null || !users.Any())
+                {
+                    return NotFound("Tidak ada user yang cocok dengan pencarian.");
+                }
+
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
     }
 }
