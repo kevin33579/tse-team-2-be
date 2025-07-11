@@ -16,6 +16,12 @@ namespace ScheduleApi.Data
         Task<int> CreateAsync(Schedule schedule);   // returns new Id
         Task<bool> UpdateAsync(Schedule schedule);   // returns true if row updated
         Task<bool> DeleteAsync(int id);              // returns true if row deleted
+
+        Task<bool> DeactivateAsync(int id);
+
+        Task<bool> ActivateAsync(int id);
+
+        Task<List<Schedule>> GetAllAdminAsync();
     }
 
     /* ---------- Implementation ---------- */
@@ -37,7 +43,7 @@ namespace ScheduleApi.Data
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            const string query = @"SELECT id, time FROM schedule";
+            const string query = @"SELECT id, time,isActive FROM schedule WHERE isActive = TRUE ORDER BY time desc";
 
             using var command = new MySqlCommand(query, connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -47,7 +53,35 @@ namespace ScheduleApi.Data
                 schedules.Add(new Schedule
                 {
                     Id = reader.GetInt32("id"),
-                    Time = reader.GetDateTime("time")
+                    Time = reader.GetDateTime("time"),
+                    IsActive = reader.GetBoolean("isActive")
+
+                });
+            }
+
+            return schedules;
+        }
+
+        public async Task<List<Schedule>> GetAllAdminAsync()
+        {
+            var schedules = new List<Schedule>();
+
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"SELECT id, time,isActive FROM schedule ORDER BY id asc";
+
+            using var command = new MySqlCommand(query, connection);
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                schedules.Add(new Schedule
+                {
+                    Id = reader.GetInt32("id"),
+                    Time = reader.GetDateTime("time"),
+                    IsActive = reader.GetBoolean("isActive")
+
                 });
             }
 
@@ -111,6 +145,36 @@ namespace ScheduleApi.Data
             int rows = await command.ExecuteNonQueryAsync();
             return rows > 0;
         }
+
+        public async Task<bool> DeactivateAsync(int id)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"UPDATE schedule SET isActive = 0 WHERE id = @id";
+
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@id", id);
+
+            int rows = await command.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
+
+        public async Task<bool> ActivateAsync(int id)
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"UPDATE schedule SET isActive = 1 WHERE id = @id";
+
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@id", id);
+
+            int rows = await command.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
+
+
 
         /* ----------- DELETE ----------- */
         public async Task<bool> DeleteAsync(int id)

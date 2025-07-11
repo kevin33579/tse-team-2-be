@@ -44,9 +44,7 @@ CREATE TABLE productType (
 );
 
 ALTER TABLE productType         
-ADD COLUMN isActive BOOLEAN DEFAULT True ; 
-
-
+ADD COLUMN imageUrl TEXT ; 
 
 
 
@@ -107,9 +105,6 @@ INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId
 INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId) VALUES
 ('Honda Odyssey', 900000, 100, 'Course SUV Honda Odyssey','https://media.zcreators.id/crop/photo/p2/93/2024/09/15/2021-honda-odyssey-japan-refresh-lead-2254512288.jpg' ,6);
 
-ALTER TABLE product         
-ADD COLUMN isActive BOOLEAN DEFAULT True ; 
-
 -- =====================
 -- TABEL: schedule
 -- =====================
@@ -119,8 +114,8 @@ CREATE TABLE schedule (
 );
 
 INSERT INTO schedule (time) VALUES
-('2025-07-01 10:00:00'),
-('2025-07-02 14:00:00');
+('2025-07-11 10:00:00'),
+('2025-07-12 14:00:00');
 
 -- =====================
 -- TABEL: cart
@@ -191,8 +186,6 @@ INSERT INTO paymentMethod (`name`,`imageUrl`) VALUES
 ('BCA','https://www.svgrepo.com/show/303676/bca-bank-central-asia-logo.svg'),
 ('BNI','https://images.seeklogo.com/logo-png/35/1/bank-bni-logo-png_seeklogo-355606.png')
 ;
-ALTER TABLE paymentMethod         
-ADD COLUMN isActive BOOLEAN DEFAULT True ; 
 
 -- =====================
 -- TABEL: invoice
@@ -217,6 +210,14 @@ INSERT INTO invoice
         (user_id, invoiceCode, `date`, totalPrice, totalCourse, paymentMethodId)
 VALUES  (1, 'INV-20250701-0001', NOW(), 1500000.00, 3, 2);
 
+ALTER TABLE paymentMethod         
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
+
+ALTER TABLE product         
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
+
+ALTER TABLE schedule         
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
 
 
 

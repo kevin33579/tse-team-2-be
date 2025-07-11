@@ -14,6 +14,8 @@ namespace ScheduleApi.Models
         [Column("time")]
         public DateTime Time { get; set; }       // time DATETIME NOT NULL
 
+        public bool IsActive { get; set; }
+
         /* ---- optional navigation property ----
         public ICollection<CartItem> CartItems { get; set; }
         */

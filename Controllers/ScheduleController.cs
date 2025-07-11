@@ -25,6 +25,31 @@ namespace ScheduleApi.Controllers
             var schedules = await _repository.GetAllAsync();
             return Ok(schedules);                       // 200
         }
+        [HttpGet("Admin")]
+        public async Task<ActionResult<IEnumerable<Schedule>>> GetAllAdminAsync()
+        {
+            var schedules = await _repository.GetAllAdminAsync();
+            return Ok(schedules);                       // 200
+        }
+
+        [HttpPut("deactivate/{id:int}")]
+        public async Task<IActionResult> DeactivateSchedule(int id)
+        {
+            var success = await _repository.DeactivateAsync(id);
+            if (!success) return NotFound();
+
+            return NoContent();
+        }
+
+        [HttpPut("activate/{id:int}")]
+        public async Task<IActionResult> ActivateSchedule(int id)
+        {
+            var success = await _repository.ActivateAsync(id);
+            if (!success) return NotFound();
+
+            return NoContent();
+        }
+
 
         // GET: /api/schedule/{id}
         [HttpGet("{id:int}")]
