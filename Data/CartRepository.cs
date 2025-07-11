@@ -43,13 +43,15 @@ SELECT  c.id,
         s.time              AS scheduleTime,
         p.name              AS productName,
         p.imageUrl          AS productImageUrl, 
-         p.price             AS productPrice,  
+        p.price             AS productPrice,  
+        p.stock,
+        p.isActive          AS productIsActive,
         pt.name             AS productTypeName
 FROM    carts c
 JOIN    product       p  ON p.id  = c.product_id
 JOIN    producttype   pt ON pt.id = p.productTypeId
 LEFT JOIN schedule     s ON s.id  = c.schedule_id
-WHERE   c.user_id = @userId";
+WHERE   c.user_id = @userId  AND   p.isActive = TRUE AND p.stock >0";
 
             var carts = new List<Cart>();
 
