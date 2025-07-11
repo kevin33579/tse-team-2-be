@@ -44,7 +44,9 @@ CREATE TABLE productType (
 );
 
 ALTER TABLE productType         
-ADD COLUMN imageUrl TEXT ; 
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
+
+
 
 
 
@@ -186,6 +188,8 @@ INSERT INTO paymentMethod (`name`,`imageUrl`) VALUES
 ('BCA','https://www.svgrepo.com/show/303676/bca-bank-central-asia-logo.svg'),
 ('BNI','https://images.seeklogo.com/logo-png/35/1/bank-bni-logo-png_seeklogo-355606.png')
 ;
+ALTER TABLE paymentMethod         
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
 
 -- =====================
 -- TABEL: invoice
