@@ -17,6 +17,7 @@ namespace UserApi.Data
         Task<bool> UpdateLastLoginAsync(int id);
         Task<bool> EmailExistsAsync(string email);
         Task<(User user, string roleName)?> GetUserWithRoleByEmailAsync(string email);
+        Task<List<User>> SearchUsersAsync(string? searchTerm);
 
         Task<bool> VerifyUserEmailAsync(int id);
         Task<bool> VerifyEmailAsync(string token); // Verify by token
@@ -24,6 +25,8 @@ namespace UserApi.Data
         Task<string> UpdatePasswordResetTokenAsync(int id);
         Task<User?> GetUserByPasswordResetTokenAsync(string token);
         Task<bool> UpdatePasswordAndClearResetTokenAsync(int id, string newHashedPassword);
+
+        Task<bool> DeactivateUserAsync(int userId);
 
     }
 
@@ -37,6 +40,25 @@ namespace UserApi.Data
             _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException("Connection string tidak ditemukan");
         }
+
+        public async Task<bool> DeactivateUserAsync(int userId)
+        {
+            const string sql = @"UPDATE users SET isActive = 0 WHERE id = @id";
+
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", userId);
+
+            int affectedRows = await cmd.ExecuteNonQueryAsync();
+
+            return affectedRows > 0;
+        }
+
+
+
+
 
         // ─────────────────────────────────────────────────────────────
         // Get every user and include the role name   (JOIN roles)
@@ -54,7 +76,9 @@ namespace UserApi.Data
                 u.lastLoginDate,
                 u.isActive
         FROM    users u
-        JOIN    roles r ON r.id = u.roleId";
+        JOIN    roles r ON r.id = u.roleId
+         WHERE   u.isActive = 1
+        ";
 
             var list = new List<User>();
 
@@ -290,6 +314,48 @@ namespace UserApi.Data
 
             return null;
         }
+
+        public async Task<List<User>> SearchUsersAsync(string? searchTerm)
+        {
+            var users = new List<User>();
+
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            string query = @"
+        SELECT u.id, u.username, u.email, u.password, u.roleId,
+               r.name AS roleName,
+               u.createdDate, u.lastLoginDate, u.isActive
+        FROM users u
+        JOIN roles r ON u.roleId = r.id
+        WHERE (@searchTerm IS NULL OR u.username LIKE @searchPattern OR u.email LIKE @searchPattern)
+        ORDER BY u.createdDate DESC;
+    ";
+
+            using var command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@searchTerm", string.IsNullOrWhiteSpace(searchTerm) ? DBNull.Value : searchTerm);
+            command.Parameters.AddWithValue("@searchPattern", $"%{searchTerm}%");
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                users.Add(new User
+                {
+                    Id = reader.GetInt32("id"),
+                    Username = reader.IsDBNull("username") ? null : reader.GetString("username"),
+                    Email = reader.GetString("email"),
+                    Password = reader.GetString("password"),
+                    RoleID = reader.GetInt32("roleId"),
+                    RoleName = reader.GetString("roleName"),
+                    CreatedDate = reader.GetDateTime("createdDate"),
+                    LastLoginDate = reader.IsDBNull("lastLoginDate") ? null : reader.GetDateTime("lastLoginDate"),
+                    IsActive = reader.GetBoolean("isActive")
+                });
+            }
+
+            return users;
+        }
+
 
 
         public async Task<bool> CreateUserAsync(RegisterRequest request)
@@ -530,5 +596,7 @@ namespace UserApi.Data
                 }
             }
         }
+
+
     }
 }

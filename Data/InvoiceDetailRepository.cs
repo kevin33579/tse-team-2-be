@@ -73,16 +73,24 @@ SELECT LAST_INSERT_ID();";
             for (int i = 0; i < list.Count; i++)
                 values.Add($"(@Inv{i}, @Prod{i}, @Sched{i})");
 
-            var sql = $@"
+            var insertSql = $@"
 INSERT INTO detail_invoice (invoice_id, product_id, schedule_id)
 VALUES {string.Join(", ", values)};";
+
+            var updateSql = new List<string>();
+            for (int i = 0; i < list.Count; i++)
+                updateSql.Add($"UPDATE product SET stock = stock - 1 WHERE id = @Prod{i};");
+
+            var fullSql = insertSql + "\n" + string.Join("\n", updateSql);
 
             try
             {
                 await using var conn = new MySqlConnection(_connString);
                 await conn.OpenAsync(ct);
 
-                await using var cmd = new MySqlCommand(sql, conn);
+                await using var tx = await conn.BeginTransactionAsync(ct);
+                await using var cmd = new MySqlCommand(fullSql, conn, (MySqlTransaction)tx);
+
                 for (int i = 0; i < list.Count; i++)
                 {
                     cmd.Parameters.AddWithValue($"@Inv{i}", list[i].InvoiceId);
@@ -90,14 +98,18 @@ VALUES {string.Join(", ", values)};";
                     cmd.Parameters.AddWithValue($"@Sched{i}", list[i].ScheduleId);
                 }
 
-                return await cmd.ExecuteNonQueryAsync(ct);
+                int rowsAffected = await cmd.ExecuteNonQueryAsync(ct);
+                await tx.CommitAsync(ct);
+
+                return rowsAffected;
             }
             catch (Exception ex)
             {
-                throw new DatabaseException("INSERT",
-                    "Failed to bulk‑insert detail_invoice rows.", ex);
+                throw new DatabaseException("INSERT+STOCK",
+                    "Failed to bulk-insert detail_invoice rows and update stock.", ex);
             }
         }
+
 
         // ───────────────────────────────
         //  SELECT by invoice_id
@@ -177,12 +189,12 @@ SELECT  p.imageUrl     AS productImageUrl,
         p.name         AS productName,
         s.time         AS scheduleTime
 FROM    detail_invoice    di
-JOIN    invoice           i   ON i.id  = di.invoice_id
-                              AND i.user_id = @UserId          -- ← user filter
-JOIN    product           p   ON p.id  = di.product_id
-JOIN    producttype       pt  ON pt.id = p.productTypeId
-LEFT JOIN schedule        s   ON s.id  = di.schedule_id
-WHERE   s.time >= NOW()                                        -- ← upcoming only
+JOIN    invoice           i  ON  i.id       = di.invoice_id
+                              AND i.user_id = @UserId        -- user filter
+JOIN    product           p  ON  p.id       = di.product_id
+JOIN    producttype       pt ON  pt.id      = p.productTypeId
+LEFT JOIN schedule        s  ON  s.id       = di.schedule_id
+WHERE   DATE(s.time) >= CURDATE()                            -- ← today or future
 ORDER BY s.time;  ";
 
             var list = new List<InvoiceDetailSummaryDto>();

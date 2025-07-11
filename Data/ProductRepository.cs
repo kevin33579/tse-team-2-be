@@ -2,6 +2,8 @@ using System.Data; // DataSet, DataRow, DataNulll
 using MySql.Data.MySqlClient; // MySqlConnection, MySqlCommand, MySqlDataAdapter
 using ProductApi.Models; // Product
 using ProductApi.Exceptions;
+using ScheduleApi.Models; // Schedule
+using ScheduleApi.Data; // IScheduleRepository
 
 
 namespace ProductApi.Data
@@ -14,7 +16,9 @@ namespace ProductApi.Data
         Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
         Task<List<ProductDto>> GetAllProductLimitsAsync();
         Task<int> CreateProductAsync(Product product);                                     // CREATE - Return new ID
-        Task<bool> UpdateProductAsync(Product product);                                    // UPDATE - Return success status
+        Task<bool> UpdateProductAsync(Product product);
+        Task<List<Schedule>> GetSchedulesByProductIdAsync(int productId);
+        // UPDATE - Return success status
         Task<bool> DeleteProductAsync(int id);
     }
 
@@ -100,6 +104,7 @@ namespace ProductApi.Data
         FROM    product p
         LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
                ON pt.id = p.productTypeId
+               WHERE   p.stock > 0
         ORDER BY p.name LIMIT 6;";
                     using (var command = new MySqlCommand(queryString, connection))
                     using (var reader = await command.ExecuteReaderAsync())
@@ -129,6 +134,35 @@ namespace ProductApi.Data
 
             return products;
         }
+        public async Task<List<Schedule>> GetSchedulesByProductIdAsync(int productId)
+        {
+            var schedules = new List<Schedule>();
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var query = @"
+        SELECT s.id, s.time
+        FROM schedule s
+        JOIN product_schedule ps ON s.id = ps.schedule_id
+        WHERE ps.product_id = @productId;
+    ";
+
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddWithValue("@productId", productId);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                schedules.Add(new Schedule
+                {
+                    Id = reader.GetInt32("Id"),
+                    Time = reader.GetDateTime("Time")
+                });
+            }
+
+            return schedules;
+        }
+
 
         public async Task<ProductDto?> GetProductByIdAsync(int id)
         {
@@ -196,17 +230,18 @@ namespace ProductApi.Data
                     await connection.OpenAsync();
                     string queryString = @"
                 SELECT  p.id,
-                p.name,
-                p.price,
-                p.stock,
-                p.description,
-                p.imageUrl,
-                p.productTypeId,
-                pt.name AS productTypeName          -- ① alias persis!
-        FROM    product p
-        LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
-               ON pt.id = p.productTypeId
-                WHERE pt.id = @productTypeId"; ;
+        p.name,
+        p.price,
+        p.stock,
+        p.description,
+        p.imageUrl,
+        p.productTypeId,
+        pt.name AS productTypeName
+FROM    product p
+LEFT JOIN producttype pt ON pt.id = p.productTypeId
+WHERE   pt.id = @productTypeId
+  AND   p.stock > 0;
+"; ;
 
                     using (var command = new MySqlCommand(queryString, connection))
                     {
