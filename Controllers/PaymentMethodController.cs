@@ -45,6 +45,36 @@ namespace PaymentApi.Controllers
                                    .ErrorResult("Server error", 500));
             }
         }
+        // GET: api/paymentmethod/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ApiResult<PaymentMethod>>> GetById(
+            uint id,
+            CancellationToken ct = default)
+        {
+            if (id == 0)
+            {
+                return BadRequest(ApiResult<PaymentMethod>
+                                  .ErrorResult("Payment method ID cannot be zero", 400));  // Bad Request
+            }
+
+            try
+            {
+                var method = await _repository.GetPaymentMethodByIdAsync(id, ct);
+                if (method == null)
+                {
+                    return NotFound(ApiResult<PaymentMethod>
+                                    .ErrorResult("Payment method not found", 404));  // Not Found
+                }
+                return Ok(ApiResult<PaymentMethod>
+                          .SuccessResult(method, "Payment method retrieved"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching payment method by ID");
+                return StatusCode(500, ApiResult<PaymentMethod>
+                                   .ErrorResult("Server error", 500));
+            }
+        }
 
         // POST: api/paymentmethod
         [HttpPost]

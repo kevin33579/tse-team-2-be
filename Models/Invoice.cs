@@ -30,5 +30,12 @@ namespace InvoiceApi.Models
 
         [Column("user_id")]
         public uint UserId { get; set; }
+
+        [NotMapped]
+        public string? UserName { get; set; }
+
+        [NotMapped]
+        public string? PaymentMethodName { get; set; }
+
     }
 }
