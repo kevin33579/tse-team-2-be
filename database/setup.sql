@@ -107,6 +107,9 @@ INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId
 INSERT INTO product (`name`, price, stock, `description`,imageUrl ,productTypeId) VALUES
 ('Honda Odyssey', 900000, 100, 'Course SUV Honda Odyssey','https://media.zcreators.id/crop/photo/p2/93/2024/09/15/2021-honda-odyssey-japan-refresh-lead-2254512288.jpg' ,6);
 
+ALTER TABLE product         
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
+
 -- =====================
 -- TABEL: schedule
 -- =====================

@@ -46,7 +46,8 @@ namespace ScheduleApi.Controllers
             schedule.Id = newId;
 
             // 201 Created + Location header
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = newId }, schedule);
+            return Ok(new { Message = "Schedule created", Id = newId });
+
         }
 
         // PUT: /api/schedule/{id}

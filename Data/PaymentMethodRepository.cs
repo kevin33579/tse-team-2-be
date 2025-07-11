@@ -15,6 +15,8 @@ namespace PaymentApi.Data
         Task DeletePaymentMethodAsync(uint id, CancellationToken ct = default);
         Task<PaymentMethod> GetPaymentMethodByIdAsync(uint id, CancellationToken ct = default);
 
+        Task<List<PaymentMethod>> GetAllAdminAsync(CancellationToken ct = default);
+
     }
 
     public class PaymentMethodRepository : IPaymentMethodRepository
@@ -28,7 +30,7 @@ namespace PaymentApi.Data
         }
         public async Task<List<PaymentMethod>> GetAllAsync(CancellationToken ct = default)
         {
-            const string sql = @"SELECT id, name, imageUrl, isActive FROM paymentMethod";
+            const string sql = @"SELECT id, name, imageUrl, isActive FROM paymentMethod WHERE isActive = TRUE";
             var methods = new List<PaymentMethod>();
 
             try
@@ -58,6 +60,41 @@ namespace PaymentApi.Data
                     "Gagal mengambil data payment_method", ex);
             }
         }
+
+        public async Task<List<PaymentMethod>> GetAllAdminAsync(CancellationToken ct = default)
+        {
+            const string sql = @"SELECT id, name, imageUrl, isActive FROM paymentMethod ";
+            var methods = new List<PaymentMethod>();
+
+            try
+            {
+                await using var conn = new MySqlConnection(_connString);
+                await conn.OpenAsync(ct);
+
+                await using var cmd = new MySqlCommand(sql, conn);
+                await using var reader = (MySqlDataReader)await cmd.ExecuteReaderAsync(ct);
+
+                while (await reader.ReadAsync(ct))
+                {
+                    methods.Add(new PaymentMethod
+                    {
+                        Id = reader.GetUInt32("id"),
+                        Name = reader.GetString("name"),
+                        ImageUrl = reader.GetString("imageUrl"),
+                        IsActive = reader.GetBoolean("isActive")  // Tambah ini
+                    });
+                }
+
+                return methods;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("SELECT",
+                    "Gagal mengambil data payment_method", ex);
+            }
+        }
+
+
 
         public async Task<PaymentMethod> CreatePaymentMethodAsync(PaymentMethod paymentMethod, CancellationToken ct = default)
         {

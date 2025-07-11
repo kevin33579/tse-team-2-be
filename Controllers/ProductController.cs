@@ -19,7 +19,7 @@ namespace ProductApi.Controllers
         private readonly IScheduleRepository _scheduleRepository;
         private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(IProductRepository productRepository,IScheduleRepository scheduleRepository, ILogger<ProductsController> logger)
+        public ProductsController(IProductRepository productRepository, IScheduleRepository scheduleRepository, ILogger<ProductsController> logger)
         {
             _productRepository = productRepository;
             _scheduleRepository = scheduleRepository;
@@ -192,7 +192,7 @@ namespace ProductApi.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResult>> UpdateProduct(int id, [FromBody] Product product)
+        public async Task<ActionResult<ApiResult>> UpdateProduct(int id, [FromBody] ProductDto product)
         {
             try
             {

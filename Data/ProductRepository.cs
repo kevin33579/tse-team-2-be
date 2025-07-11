@@ -16,7 +16,7 @@ namespace ProductApi.Data
         Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
         Task<List<ProductDto>> GetAllProductLimitsAsync();
         Task<int> CreateProductAsync(Product product);                                     // CREATE - Return new ID
-        Task<bool> UpdateProductAsync(Product product);
+        Task<bool> UpdateProductAsync(ProductDto product);
         Task<List<Schedule>> GetSchedulesByProductIdAsync(int productId);
         // UPDATE - Return success status
         Task<bool> DeleteProductAsync(int id);
@@ -49,6 +49,7 @@ namespace ProductApi.Data
                 p.description,
                 p.imageUrl,
                 p.productTypeId,
+                 p.isActive,     
                 pt.name AS productTypeName          -- ① alias persis!
         FROM    product p
         LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
@@ -68,7 +69,8 @@ namespace ProductApi.Data
                                 description = reader.IsDBNull("description") ? null : reader.GetString("description"),
                                 productTypeId = reader.IsDBNull("productTypeId") ? null : reader.GetInt32("productTypeId"),
                                 imageUrl = reader.IsDBNull("imageUrl") ? null : reader.GetString("imageUrl"),
-                                productTypeName = reader.GetString("productTypeName")
+                                productTypeName = reader.GetString("productTypeName"),
+                                isActive = reader.GetBoolean("isActive")
                             };
                             products.Add(product);
                         }
@@ -104,7 +106,7 @@ namespace ProductApi.Data
         FROM    product p
         LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
                ON pt.id = p.productTypeId
-               WHERE   p.stock > 0
+               WHERE   p.stock > 0 AND p.isActive > 0
         ORDER BY p.name LIMIT 6;";
                     using (var command = new MySqlCommand(queryString, connection))
                     using (var reader = await command.ExecuteReaderAsync())
@@ -240,7 +242,7 @@ namespace ProductApi.Data
 FROM    product p
 LEFT JOIN producttype pt ON pt.id = p.productTypeId
 WHERE   pt.id = @productTypeId
-  AND   p.stock > 0;
+  AND   p.stock > 0 AND p.isActive > 0;
 "; ;
 
                     using (var command = new MySqlCommand(queryString, connection))
@@ -378,7 +380,7 @@ WHERE   pt.id = @productTypeId
             }
         }
 
-        public async Task<bool> UpdateProductAsync(Product product)
+        public async Task<bool> UpdateProductAsync(ProductDto product)
         {
             try
             {
@@ -393,6 +395,7 @@ WHERE   pt.id = @productTypeId
                     stock = @stock, 
                     description = @description,
                     productTypeId = @productTypeId,
+                    isActive = @isActive,
                     imageUrl = @imageUrl
                 WHERE id = @id";
 
@@ -405,6 +408,7 @@ WHERE   pt.id = @productTypeId
                         command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
                         command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@isActive", product.isActive);
 
                         var rowsAffected = await command.ExecuteNonQueryAsync();
 

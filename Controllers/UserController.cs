@@ -48,6 +48,18 @@ namespace UserApi.Controllers
             return Ok(new { message = "User deactivated successfully" });
         }
 
+        [HttpPut("activate/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ActivateUser(int id)
+        {
+            var result = await _userRepository.ActivateUserAsync(id);
+
+            if (!result)
+                return NotFound(new { message = "User not found or already deactivated" });
+
+            return Ok(new { message = "User deactivated successfully" });
+        }
+
 
 
         // GET: api/users/{id}

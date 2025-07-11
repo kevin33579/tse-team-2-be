@@ -33,5 +33,6 @@ namespace ProductApi.Models
         public string? imageUrl { get; set; }
         public int? productTypeId { get; set; }
         public string productTypeName { get; set; } = string.Empty;
+        public bool isActive { get; set; }
     }
 }

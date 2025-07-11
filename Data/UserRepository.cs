@@ -27,6 +27,7 @@ namespace UserApi.Data
         Task<bool> UpdatePasswordAndClearResetTokenAsync(int id, string newHashedPassword);
 
         Task<bool> DeactivateUserAsync(int userId);
+        Task<bool> ActivateUserAsync(int userId);
 
     }
 
@@ -44,6 +45,21 @@ namespace UserApi.Data
         public async Task<bool> DeactivateUserAsync(int userId)
         {
             const string sql = @"UPDATE users SET isActive = 0 WHERE id = @id";
+
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", userId);
+
+            int affectedRows = await cmd.ExecuteNonQueryAsync();
+
+            return affectedRows > 0;
+        }
+
+        public async Task<bool> ActivateUserAsync(int userId)
+        {
+            const string sql = @"UPDATE users SET isActive = 1 WHERE id = @id";
 
             await using var conn = new MySqlConnection(_connectionString);
             await conn.OpenAsync();
@@ -77,7 +93,6 @@ namespace UserApi.Data
                 u.isActive
         FROM    users u
         JOIN    roles r ON r.id = u.roleId
-         WHERE   u.isActive = 1
         ";
 
             var list = new List<User>();
