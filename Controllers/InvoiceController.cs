@@ -153,12 +153,11 @@ namespace InvoiceApi.Controllers
         // ─────────────────────────────────────────────────────────────
         [HttpGet("all")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ApiResult<List<Invoice>>>> GetAllAsync(
-            CancellationToken ct = default)
+        public async Task<ActionResult<ApiResult<List<Invoice>>>> GetAllAsync(CancellationToken ct = default)
         {
             try
             {
-                var invoices = await _repo.GetAllAsync(ct);
+                var invoices = await _repo.GetAllWithNameAsync(ct); // ganti nama method ini juga
                 return Ok(ApiResult<List<Invoice>>.SuccessResult(
                           invoices, "All invoices retrieved"));  // OK
             }

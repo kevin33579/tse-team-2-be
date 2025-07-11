@@ -15,11 +15,10 @@ namespace InvoiceApi.Data
         Task<Invoice> UpdateInvoiceAsync(Invoice invoice, CancellationToken ct = default);
         Task DeleteInvoiceAsync(uint id, CancellationToken ct = default);
         Task<List<Invoice>> SearchInvoiceAsync(string invoiceCode, CancellationToken ct = default);
-        Task<List<Invoice>> GetAllInvoicesAsync(CancellationToken ct = default);
+        Task<List<Invoice>> GetAllWithNameAsync(CancellationToken ct = default);
         Task<Invoice?> GetByIdAsync(uint id, CancellationToken ct = default);
         Task<bool> DeleteAsync(uint id, CancellationToken ct = default);
         Task<Invoice> UpdateAsync(Invoice invoice, CancellationToken ct = default);
-        Task<List<Invoice>> GetAllAsync(CancellationToken ct = default);
 
     }
 
@@ -223,13 +222,17 @@ WHERE  id = @Id;";
         }
 
         // ---------- GET ALL Invoices ----------
-        public async Task<List<Invoice>> GetAllInvoicesAsync(CancellationToken ct = default)
+        public async Task<List<Invoice>> GetAllWithNameAsync(CancellationToken ct = default)
         {
             const string sql = @"
-SELECT id, user_id, invoiceCode, `date`,
-       totalPrice, totalCourse, paymentMethodId
-FROM   invoice
-ORDER  BY `date` DESC;";
+SELECT i.id, i.user_id, i.invoiceCode, i.`date`,
+       i.totalPrice, i.totalCourse, i.paymentMethodId,
+       u.username AS userName,
+       pm.name AS paymentMethodName
+FROM   invoice i
+JOIN   users u ON i.user_id = u.id
+JOIN   paymentMethod pm ON i.paymentMethodId = pm.id
+ORDER  BY i.`date` DESC;";
 
             var invoices = new List<Invoice>();
 
@@ -252,7 +255,9 @@ ORDER  BY `date` DESC;";
                         Date = reader.GetDateTime("date"),
                         TotalPrice = reader.GetDecimal("totalPrice"),
                         TotalCourse = reader.GetInt32("totalCourse"),
-                        PaymentMethodId = reader.GetInt32("paymentMethodId")
+                        PaymentMethodId = reader.GetInt32("paymentMethodId"),
+                        UserName = reader.GetString("userName"),
+                        PaymentMethodName = reader.GetString("paymentMethodName")
                     });
                 }
 
@@ -261,9 +266,10 @@ ORDER  BY `date` DESC;";
             catch (Exception ex)
             {
                 throw new DatabaseException("SELECT",
-                    "Gagal mengambil data invoice", ex);
+                    "Gagal mengambil data invoice dengan user dan payment method", ex);
             }
         }
+
         // 🔍 Get invoice by ID
         public async Task<Invoice?> GetByIdAsync(uint id, CancellationToken ct = default)
         {
@@ -309,16 +315,35 @@ WHERE  id = @Id;";
         // 🗑 Delete invoice (returns bool)
         public async Task<bool> DeleteAsync(uint id, CancellationToken ct = default)
         {
-            const string sql = @"DELETE FROM invoice WHERE id = @Id;";
+            const string sqlDeleteDetails = @"DELETE FROM detail_invoice WHERE invoice_id = @Id;";
+            const string sqlDeleteInvoice = @"DELETE FROM invoice WHERE id = @Id;";
+
             try
             {
                 await using var conn = new MySqlConnection(_connString);
                 await conn.OpenAsync(ct);
 
-                await using var cmd = new MySqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Id", id);
+                // Start a transaction to ensure atomicity
+                await using var transaction = await conn.BeginTransactionAsync(ct);
 
-                var rowsAffected = await cmd.ExecuteNonQueryAsync(ct);
+                // Delete child detail_invoice rows first
+                await using (var cmdDeleteDetails = new MySqlCommand(sqlDeleteDetails, conn, transaction))
+                {
+                    cmdDeleteDetails.Parameters.AddWithValue("@Id", id);
+                    await cmdDeleteDetails.ExecuteNonQueryAsync(ct);
+                }
+
+                // Delete the invoice now
+                int rowsAffected;
+                await using (var cmdDeleteInvoice = new MySqlCommand(sqlDeleteInvoice, conn, transaction))
+                {
+                    cmdDeleteInvoice.Parameters.AddWithValue("@Id", id);
+                    rowsAffected = await cmdDeleteInvoice.ExecuteNonQueryAsync(ct);
+                }
+
+                // Commit transaction
+                await transaction.CommitAsync(ct);
+
                 return rowsAffected > 0;
             }
             catch (Exception ex)
@@ -328,17 +353,14 @@ WHERE  id = @Id;";
             }
         }
 
+
         // ✏️ Update invoice
         public Task<Invoice> UpdateAsync(Invoice invoice, CancellationToken ct = default)
         {
             return UpdateInvoiceAsync(invoice, ct); // delegate ke method yang sudah ada
         }
 
-        // 📃 Get all invoices
-        public Task<List<Invoice>> GetAllAsync(CancellationToken ct = default)
-        {
-            return GetAllInvoicesAsync(ct); // delegate ke method yang sudah ada
-        }
+
 
     }
 }
