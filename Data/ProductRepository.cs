@@ -104,6 +104,7 @@ namespace ProductApi.Data
         FROM    product p
         LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
                ON pt.id = p.productTypeId
+               WHERE   p.stock > 0
         ORDER BY p.name LIMIT 6;";
                     using (var command = new MySqlCommand(queryString, connection))
                     using (var reader = await command.ExecuteReaderAsync())
@@ -229,17 +230,18 @@ namespace ProductApi.Data
                     await connection.OpenAsync();
                     string queryString = @"
                 SELECT  p.id,
-                p.name,
-                p.price,
-                p.stock,
-                p.description,
-                p.imageUrl,
-                p.productTypeId,
-                pt.name AS productTypeName          -- ① alias persis!
-        FROM    product p
-        LEFT JOIN producttype pt                -- ② nama tabel sesuai definisi
-               ON pt.id = p.productTypeId
-                WHERE pt.id = @productTypeId"; ;
+        p.name,
+        p.price,
+        p.stock,
+        p.description,
+        p.imageUrl,
+        p.productTypeId,
+        pt.name AS productTypeName
+FROM    product p
+LEFT JOIN producttype pt ON pt.id = p.productTypeId
+WHERE   pt.id = @productTypeId
+  AND   p.stock > 0;
+"; ;
 
                     using (var command = new MySqlCommand(queryString, connection))
                     {
