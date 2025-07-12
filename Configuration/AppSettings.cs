@@ -12,6 +12,7 @@ namespace ProductApi.Configuration
         public string AppName { get; set; } = string.Empty;
 
         public string FrontendBaseUrl { get; set; } = string.Empty;
+        public string BackendBaseUrl { get; set; } = string.Empty;
 
         /// <summary>
         /// Versi aplikasi - untuk tracking deployment dan debugging
