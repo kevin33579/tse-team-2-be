@@ -13,6 +13,7 @@ namespace UserApi.Data
         Task<List<User>> GetAllUsersAsync();
         Task<User?> GetUserByIdAsync(int id);
         Task<User?> DeleteUser(int id); // Delete user by ID
+        Task<int?> CreateUserAsync(RegisterRequest request);
         Task<bool> UpdateLastLoginAsync(int id);
         Task<bool> EmailExistsAsync(string email);
         Task<(User user, string roleName)?> GetUserWithRoleByEmailAsync(string email);
@@ -136,6 +137,7 @@ namespace UserApi.Data
                 string query = @"
                     SELECT * 
                     FROM users 
+                    WHERE email = @email";
 
                 using (var command = new MySqlCommand(query, connection))
                 {
@@ -252,6 +254,14 @@ namespace UserApi.Data
         public async Task<(User user, string roleName)?> GetUserWithRoleByEmailAsync(string email)
         {
             const string sql = @"
+    SELECT  u.id, u.username, u.email, u.password, u.createdDate,
+            u.lastLoginDate, u.isActive, u.roleId,
+            u.isEmailVerified,                        
+            r.name AS roleName
+    FROM    users u
+    JOIN    roles r ON r.id = u.roleId
+    WHERE   u.email = @email AND u.isActive = 1
+    LIMIT 1;";
 
             await using var conn = new MySqlConnection(_connectionString);
             await conn.OpenAsync();
