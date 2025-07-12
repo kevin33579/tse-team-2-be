@@ -25,7 +25,7 @@ namespace UserApi.Services
         /// <param name="logger">Logger untuk monitoring email delivery</param>
         /// <param name="appSettings">App settings untuk base URL, dll</param>
         public EmailService(
-            IOptions<EmailSettings> emailSettings, 
+            IOptions<EmailSettings> emailSettings,
             ILogger<EmailService> logger,
             IOptions<AppSettings> appSettings)
         {
@@ -43,6 +43,9 @@ namespace UserApi.Services
         {
             try
             {
+                _logger.LogInformation("SMTP config: server={Server}, port={Port}, ssl={Ssl}, username={Username}",
+    _emailSettings.SmtpServer, _emailSettings.SmtpPort, _emailSettings.EnableSsl, _emailSettings.Username);
+
                 // Validasi input parameters
                 if (string.IsNullOrWhiteSpace(to) || string.IsNullOrWhiteSpace(subject))
                 {
@@ -58,12 +61,12 @@ namespace UserApi.Services
 
                 // Create body builder untuk HTML dan text
                 var bodyBuilder = new BodyBuilder();
-                
+
                 if (!string.IsNullOrWhiteSpace(htmlBody))
                 {
                     bodyBuilder.HtmlBody = htmlBody;
                 }
-                
+
                 if (!string.IsNullOrWhiteSpace(textBody))
                 {
                     bodyBuilder.TextBody = textBody;
@@ -78,17 +81,17 @@ namespace UserApi.Services
 
                 // Send email menggunakan SMTP client
                 using var client = new SmtpClient();
-                
+
                 // Connect ke SMTP server dengan SSL/TLS
-                await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort, 
+                await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort,
                     _emailSettings.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
-                
+
                 // Authenticate dengan username dan password
                 if (!string.IsNullOrWhiteSpace(_emailSettings.Username) && !string.IsNullOrWhiteSpace(_emailSettings.Password))
                 {
                     await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
                 }
-                
+
                 // Send message
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
@@ -99,6 +102,7 @@ namespace UserApi.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to send email to {To} with subject '{Subject}'. Error: {Error}", to, subject, ex.Message);
+                _logger.LogError(ex, "SMTP Error: {Message}", ex.Message);
                 return false;
             }
         }
@@ -112,11 +116,8 @@ namespace UserApi.Services
             try
             {
                 var subject = "Verifikasi Email Anda - ProductAPI";
-                
-                // Base URL untuk verification link (bisa dari frontend atau backend)
-                var baseUrl = _appSettings.FrontendBaseUrl;
-                var verificationLink = $"{baseUrl}/verify-email?token={verificationToken}";
-                
+                var verificationLink = $"{_appSettings.FrontendBaseUrl}/verify-email?token={verificationToken}";
+
                 // HTML template yang professional dan menarik
                 var htmlBody = $@"
                 <!DOCTYPE html>
@@ -205,12 +206,12 @@ namespace UserApi.Services
                 ";
 
                 var result = await SendEmailAsync(to, subject, htmlBody, textBody);
-                
+
                 if (result)
                 {
                     _logger.LogInformation("Verification email sent successfully to {Email} for user {UserName}", to, userName);
                 }
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -231,7 +232,7 @@ namespace UserApi.Services
                 var subject = "Reset Password Anda - " + _appSettings.AppName;
                 var baseUrl = _appSettings.FrontendBaseUrl;
                 var resetLink = $"{baseUrl}/create-new-password?token={resetToken}";
-                
+
                 var htmlBody = $@"
                 <!DOCTYPE html>
                 <html>
@@ -291,7 +292,7 @@ namespace UserApi.Services
             try
             {
                 var subject = $"Konfirmasi Order #{orderNumber} - {_appSettings.AppName}";
-                
+
                 var htmlBody = $@"
                 <!DOCTYPE html>
                 <html>

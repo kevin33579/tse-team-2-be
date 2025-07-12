@@ -33,6 +33,13 @@ INSERT INTO users (username, email, `password`, roleId) VALUES
 ('admin', 'admin@example.com', '$2a$11$GQkU36Xltn9I6WRJaBkzEuV/p1sVCX8bTuBeYmK2DbQ60mr9b9o1G', 1), -- password admin123
 ('john_doe', 'john@example.com', '$2a$11$xiyq54W4oc7bEC9/cWQKLOI1LyRzLJhQ5rDCyZkN6kM9D88M6RAY2', 2); -- password password123
 
+ALTER TABLE users
+ADD COLUMN isEmailVerified BOOLEAN DEFAULT FALSE AFTER isActive,
+ADD COLUMN emailVerificationToken VARCHAR(255) NULL AFTER isEmailVerified,
+ADD COLUMN emailTokenCreatedAt DATETIME NULL AFTER emailVerificationToken;
+ALTER TABLE users
+ADD COLUMN passwordResetToken VARCHAR(255),
+ADD COLUMN passwordResetTokenCreatedAt DATETIME;
 
 -- =====================
 -- TABEL: productType
@@ -176,6 +183,9 @@ CREATE TABLE paymentMethod (
 
 ALTER TABLE paymentMethod         
 ADD COLUMN imageUrl TEXT ; 
+ALTER TABLE paymentMethod
+ADD COLUMN isActive BOOLEAN NOT NULL DEFAULT TRUE;
+
 
 
 INSERT INTO paymentMethod (`name`,`imageUrl`) VALUES
