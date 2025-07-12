@@ -403,7 +403,7 @@ namespace UserApi.Data
                     command.Parameters.AddWithValue("@password", hashedPassword);
                     command.Parameters.AddWithValue("@roleId", 2); // Default role User
                     command.Parameters.AddWithValue("@createdDate", DateTime.Now);
-                    command.Parameters.AddWithValue("@isActive", false);
+                    command.Parameters.AddWithValue("@isActive", true);
                     command.Parameters.AddWithValue("@isEmailVerified", false);
                     command.Parameters.AddWithValue("@emailVerificationToken", verificationToken);
                     command.Parameters.AddWithValue("@emailTokenCreatedAt", DateTime.Now);

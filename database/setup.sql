@@ -25,7 +25,7 @@ CREATE TABLE users (
     roleId INT,
     createdDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     lastLoginDate DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    isActive BOOLEAN DEFAULT False,
+    isActive BOOLEAN DEFAULT TRUE,
     isEmailVerified BOOLEAN DEFAULT FALSE,
     emailVerificationToken VARCHAR(255) NULL,
     emailTokenCreatedAt DATETIME NULL,
