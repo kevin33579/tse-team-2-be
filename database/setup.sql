@@ -25,14 +25,19 @@ CREATE TABLE users (
     roleId INT,
     createdDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     lastLoginDate DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    isActive BOOLEAN DEFAULT True,
+    isActive BOOLEAN DEFAULT TRUE,
+    isEmailVerified BOOLEAN DEFAULT FALSE,
+    emailVerificationToken VARCHAR(255) NULL,
+    emailTokenCreatedAt DATETIME NULL,
+    passwordResetToken VARCHAR(255),
+    passwordResetTokenCreatedAt DATETIME,
     FOREIGN KEY (roleId) REFERENCES roles(id)
 );
 
-INSERT INTO users (username, email, `password`, roleId) VALUES
-('admin', 'admin@example.com', '$2a$11$GQkU36Xltn9I6WRJaBkzEuV/p1sVCX8bTuBeYmK2DbQ60mr9b9o1G', 1), -- password admin123
-('john_doe', 'john@example.com', '$2a$11$xiyq54W4oc7bEC9/cWQKLOI1LyRzLJhQ5rDCyZkN6kM9D88M6RAY2', 2); -- password password123
 
+INSERT INTO users (username, email, `password`, roleId, isActive, isEmailVerified) VALUES
+('admin', 'admin@example.com', '$2y$10$2bEIOaTYsk5PNLngnP6jQedMlbXG5cjJg6zv30WlrD2jNkyMAfGT6', 1,1,1), -- password admin123
+('john_doe', 'john@example.com', '$2a$11$xiyq54W4oc7bEC9/cWQKLOI1LyRzLJhQ5rDCyZkN6kM9D88M6RAY2', 2,1,1); -- password password123
 
 -- =====================
 -- TABEL: productType
@@ -114,8 +119,8 @@ CREATE TABLE schedule (
 );
 
 INSERT INTO schedule (time) VALUES
-('2025-07-01 10:00:00'),
-('2025-07-02 14:00:00');
+('2025-07-11 10:00:00'),
+('2025-07-12 14:00:00');
 
 -- =====================
 -- TABEL: cart
@@ -176,6 +181,9 @@ CREATE TABLE paymentMethod (
 
 ALTER TABLE paymentMethod         
 ADD COLUMN imageUrl TEXT ; 
+ALTER TABLE paymentMethod
+ADD COLUMN isActive BOOLEAN NOT NULL DEFAULT TRUE;
+
 
 
 INSERT INTO paymentMethod (`name`,`imageUrl`) VALUES
@@ -210,6 +218,14 @@ INSERT INTO invoice
         (user_id, invoiceCode, `date`, totalPrice, totalCourse, paymentMethodId)
 VALUES  (1, 'INV-20250701-0001', NOW(), 1500000.00, 3, 2);
 
+ALTER TABLE product         
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
+
+ALTER TABLE schedule         
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
+
+ALTER TABLE productType         
+ADD COLUMN isActive BOOLEAN DEFAULT True ; 
 
 
 

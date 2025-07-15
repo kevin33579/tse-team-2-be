@@ -61,15 +61,26 @@ namespace UserApi.Controllers
                     return Unauthorized(new LoginResponse { Success = false, Message = "Email atau password salah" });
                 }
 
-                // 4. touch last‑login
+                // 4. cek apakah email sudah diverifikasi
+                if (!user.IsEmailVerified)
+                {
+                    _logger.LogWarning("Login blocked: email not verified for {Email}", request.Email);
+                    return Unauthorized(new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Akun Anda belum diverifikasi. Silakan cek email Anda untuk verifikasi."
+                    });
+                }
+
+                // 5. update last login
                 await _userRepository.UpdateLastLoginAsync(user.Id);
 
-                // 5. generate JWT (add role to claims if your service supports it)
-                string token = _tokenService.GenerateToken(user,roleName);
+                // 6. generate JWT
+                string token = _tokenService.GenerateToken(user, roleName);
 
                 _logger.LogInformation("Login successful for {Email}", request.Email);
 
-                // 6. success response
+                // 7. success response
                 return Ok(new LoginResponse
                 {
                     Success = true,
@@ -80,7 +91,7 @@ namespace UserApi.Controllers
                         Email = user.Email,
                         Username = user.Username,
                         LastLoginDate = DateTime.Now,
-                        RoleName = roleName       // ← new field
+                        RoleName = roleName
                     },
                     Token = token
                 });
@@ -91,6 +102,7 @@ namespace UserApi.Controllers
                 return StatusCode(500, new LoginResponse { Success = false, Message = "Terjadi kesalahan server" });
             }
         }
+
 
 
         /// <summary>
@@ -104,7 +116,7 @@ namespace UserApi.Controllers
             {
                 _logger.LogInformation($"Register attempt for email: {request.Email}");
 
-                // Validasi input
+                // 1. Validasi input
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(new LoginResponse
@@ -114,7 +126,7 @@ namespace UserApi.Controllers
                     });
                 }
 
-                // Cek apakah email sudah ada
+                // 2. Cek apakah email sudah terdaftar
                 bool emailExists = await _userRepository.EmailExistsAsync(request.Email);
                 if (emailExists)
                 {
@@ -125,10 +137,9 @@ namespace UserApi.Controllers
                     });
                 }
 
-                // Buat user baru
-                bool created = await _userRepository.CreateUserAsync(request);
-
-                if (!created)
+                // 3. Buat user baru
+                int? userId = await _userRepository.CreateUserAsync(request);
+                if (userId == null)
                 {
                     return StatusCode(500, new LoginResponse
                     {
@@ -137,8 +148,9 @@ namespace UserApi.Controllers
                     });
                 }
 
-                // Get the newly created user to generate token
-                var newUser = await _userRepository.GetUserByEmailAsync(request.Email);
+
+                // 4. Ambil data user yang baru dibuat
+                var newUser = await _userRepository.GetUserByIdAsync(userId.Value);
                 if (newUser == null)
                 {
                     return StatusCode(500, new LoginResponse
@@ -148,33 +160,35 @@ namespace UserApi.Controllers
                     });
                 }
 
-                // // Generate email verification token
-                // string verificationToken = await _userRepository.UpdateEmailVerificationTokenAsync(newUser.Id);
+                // 5. Generate token verifikasi dan simpan di DB
+                string verificationToken = await _userRepository.UpdateEmailVerificationTokenAsync(newUser.Id);
 
-                // // buat link verifikasi (contoh)
-                // string verificationLink = $"https://yourfrontend.com/verify?token={verificationToken}";
+                // 6. Kirim email verifikasi
+                bool emailSent = await _emailService.SendVerificationEmailAsync(newUser.Email, newUser.Username, verificationToken);
+                if (!emailSent)
+                {
+                    _logger.LogWarning("Gagal mengirim email verifikasi ke {Email}", newUser.Email);
+                    return StatusCode(500, new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Akun berhasil dibuat, tapi gagal mengirim email verifikasi. Coba lagi nanti."
+                    });
+                }
 
-                // // kirim email
-                // await _emailService.SendEmailAsync(newUser.Email, "Verifikasi Akun Anda",
-                //     $"Klik link berikut untuk verifikasi akun Anda: <a href='{verificationLink}'>Verifikasi</a>");
+                _logger.LogInformation($"Register successful for email: {request.Email}, verification email sent.");
 
-                // Generate JWT token (optional, kalau mau auto login)
-                // string token = _tokenService.GenerateToken(newUser);
-
-                // _logger.LogInformation($"Register successful for email: {request.Email}, verification email sent.");
-
-
+                // 7. Return response sukses
                 return Ok(new LoginResponse
                 {
                     Success = true,
-                    Message = "Akun berhasil dibuat dan login otomatis",
+                    Message = "Akun berhasil dibuat. Silakan verifikasi email Anda melalui link yang dikirim.",
                     User = new UserInfo
                     {
                         UserID = newUser.Id,
                         Email = newUser.Email,
                         Username = newUser.Username,
                         LastLoginDate = DateTime.Now
-                    },
+                    }
                 });
             }
             catch (Exception ex)
@@ -187,6 +201,7 @@ namespace UserApi.Controllers
                 });
             }
         }
+
 
         /// <summary>
         /// Logout (placeholder untuk future implementation)
@@ -206,49 +221,35 @@ namespace UserApi.Controllers
         }
 
         [HttpGet("verify-email")]
-        public async Task<ActionResult<LoginResponse>> VerifyEmail([FromQuery] string token)
+        public async Task<IActionResult> VerifyEmail([FromQuery] string token)
         {
             try
             {
                 if (string.IsNullOrEmpty(token))
                 {
-                    return BadRequest(new LoginResponse
-                    {
-                        Success = false,
-                        Message = "Token verifikasi tidak valid"
-                    });
+                    return BadRequest("Token verifikasi tidak valid");
                 }
 
-                // Verify email with token
+                // Verifikasi email
                 bool verified = await _userRepository.VerifyEmailAsync(token);
 
                 if (!verified)
                 {
-                    return BadRequest(new LoginResponse
-                    {
-                        Success = false,
-                        Message = "Token verifikasi tidak valid atau sudah expired"
-                    });
+                    return BadRequest("Token verifikasi tidak valid atau sudah expired");
                 }
 
                 _logger.LogInformation($"Email verification successful for token: {token.Substring(0, 8)}...");
 
-                return Ok(new LoginResponse
-                {
-                    Success = true,
-                    Message = "Email berhasil diverifikasi. Silakan login dengan akun Anda."
-                });
+                // ✅ Redirect ke login page frontend
+                return Redirect("http://localhost:5173/login?verified=true");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error during email verification for token: {token?.Substring(0, 8)}...");
-                return StatusCode(500, new LoginResponse
-                {
-                    Success = false,
-                    Message = "Terjadi kesalahan server"
-                });
+                return StatusCode(500, "Terjadi kesalahan server");
             }
         }
+
 
         /// <summary>
         /// Meminta reset password

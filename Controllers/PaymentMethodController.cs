@@ -45,6 +45,25 @@ namespace PaymentApi.Controllers
                                    .ErrorResult("Server error", 500));
             }
         }
+
+        [HttpGet("Admin")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResult<List<PaymentMethod>>>> GetAllAdmin(
+            CancellationToken ct = default)
+        {
+            try
+            {
+                var methods = await _repository.GetAllAdminAsync(ct);
+                return Ok(ApiResult<List<PaymentMethod>>
+                          .SuccessResult(methods, "Payment methods retrieved"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching payment methods");
+                return StatusCode(500, ApiResult<List<PaymentMethod>>
+                                   .ErrorResult("Server error", 500));
+            }
+        }
         // GET: api/paymentmethod/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResult<PaymentMethod>>> GetById(

@@ -42,7 +42,7 @@ namespace ProductTypeApi.Data
             await connection.OpenAsync();
 
             const string sql = @"SELECT *
-                                 FROM ProductType LIMIT 8;";
+                                 FROM ProductType Where isActive = TRUE ;";
 
             await using var cmd = new MySqlCommand(sql, connection);
             await using var rdr = await cmd.ExecuteReaderAsync();
@@ -55,6 +55,7 @@ namespace ProductTypeApi.Data
                     Name = rdr.GetString("name"),
                     Description = rdr.IsDBNull("description") ? null : rdr.GetString("description"),
                     ImageUrl = rdr.GetString("imageUrl"),
+                    IsActive = rdr.GetBoolean("isActive")
                 });
             }
             return productTypes;
@@ -81,6 +82,7 @@ namespace ProductTypeApi.Data
                     Name = rdr.GetString("name"),
                     Description = rdr.IsDBNull("description") ? null : rdr.GetString("description"),
                     ImageUrl = rdr.GetString("imageUrl"),
+                    IsActive = rdr.GetBoolean("isActive")
                 });
             }
             return productTypes;
@@ -119,13 +121,16 @@ namespace ProductTypeApi.Data
                 UPDATE ProductType
                 SET name        = @name,
                     description = @description,
-                    imageUrl = @imageUrl
+                    imageUrl = @imageUrl,
+                    IsActive = @IsActive
                 WHERE id = @id;";
 
             await using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@name", productType.Name);
             cmd.Parameters.AddWithValue("@description", (object?)productType.Description ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@imageUrl", (object?)productType.ImageUrl ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@isActive", productType.IsActive);
+
             cmd.Parameters.AddWithValue("@id", productType.Id);
 
             var rows = await cmd.ExecuteNonQueryAsync();

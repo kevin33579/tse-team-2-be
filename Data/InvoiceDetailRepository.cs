@@ -193,9 +193,8 @@ JOIN    invoice           i  ON  i.id       = di.invoice_id
                               AND i.user_id = @UserId        -- user filter
 JOIN    product           p  ON  p.id       = di.product_id
 JOIN    producttype       pt ON  pt.id      = p.productTypeId
-LEFT JOIN schedule        s  ON  s.id       = di.schedule_id
-WHERE   DATE(s.time) >= CURDATE()                            -- ← today or future
-ORDER BY s.time;  ";
+LEFT JOIN schedule        s  ON  s.id       = di.schedule_id                          
+ORDER BY s.time DESC;  ";
 
             var list = new List<InvoiceDetailSummaryDto>();
 

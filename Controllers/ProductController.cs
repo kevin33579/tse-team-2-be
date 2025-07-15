@@ -6,43 +6,54 @@ using ScheduleApi.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 
-
-
 namespace ProductApi.Controllers
 {
     [ApiController]
     [Route("api/products")]
-
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
         private readonly IScheduleRepository _scheduleRepository;
         private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(IProductRepository productRepository,IScheduleRepository scheduleRepository, ILogger<ProductsController> logger)
+        public ProductsController(IProductRepository productRepository, IScheduleRepository scheduleRepository, ILogger<ProductsController> logger)
         {
             _productRepository = productRepository;
             _scheduleRepository = scheduleRepository;
             _logger = logger;
         }
 
-
         [HttpGet]
-        public async Task<ActionResult<ApiResult<List<Product>>>> GetProducts()
+        public async Task<ActionResult<ApiResult<List<ProductDto>>>> GetProducts()
         {
             try
             {
                 _logger.LogInformation("Mengambil semua produk");
                 var products = await _productRepository.GetAllProductsAsync();
-                return Ok(ApiResult<List<ProductDto>>.SuccessResult(products, "Produk berhasil diambil"));
+
+                var productDtos = products.Select(p => new ProductDto
+                {
+                    id = p.id,
+                    productTypeId = p.productTypeId,
+                    name = p.name,
+                    price = p.price,
+                    stock = p.stock,
+                    description = p.description,
+                    imageUrl = p.imageUrl,
+                    productTypeName = p.productTypeName ?? string.Empty,
+                    isActive = p.isActive
+                }).ToList();
+
+                return Ok(ApiResult<List<ProductDto>>.SuccessResult(productDtos, "Produk berhasil diambil"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil produk");
-                return StatusCode(500, ApiResult<List<Product>>.ErrorResult("Terjadi kesalahan server", 500));
+                return StatusCode(500, ApiResult<List<ProductDto>>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
-        // GET: api/products/id/schedules
+
+        // GET: api/products/{id}/schedules
         [HttpGet("{id}/schedules")]
         public async Task<ActionResult<ApiResult<List<Schedule>>>> GetScheduleByProduct(int id)
         {
@@ -62,8 +73,7 @@ namespace ProductApi.Controllers
             }
         }
 
-
-        // GET: api/Products/limit
+        // GET: api/products/limit
         [HttpGet("limit")]
         public async Task<ActionResult<ApiResult<List<ProductDto>>>> GetLimitedProducts()
         {
@@ -73,19 +83,30 @@ namespace ProductApi.Controllers
 
                 var products = await _productRepository.GetAllProductLimitsAsync();
 
-                return Ok(ApiResult<List<ProductDto>>
-                          .SuccessResult(products, "Produk berhasil diambil"));
+                // Mapping untuk keamanan
+                var productDtos = products.Select(p => new ProductDto
+                {
+                    id = p.id,
+                    productTypeId = p.productTypeId,
+                    name = p.name,
+                    price = p.price,
+                    stock = p.stock,
+                    description = p.description,
+                    imageUrl = p.imageUrl,
+                    productTypeName = p.productTypeName ?? string.Empty,
+                    isActive = p.isActive
+                }).ToList();
+
+                return Ok(ApiResult<List<ProductDto>>.SuccessResult(productDtos, "Produk berhasil diambil"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil produk (limit)");
-                return StatusCode(500,
-                    ApiResult<List<ProductDto>>
-                    .ErrorResult("Terjadi kesalahan server", 500));
+                return StatusCode(500, ApiResult<List<ProductDto>>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
 
-
+        // GET: api/products/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResult<ProductDto>>> GetProduct(int id)
         {
@@ -96,15 +117,29 @@ namespace ProductApi.Controllers
                 if (product == null)
                     return NotFound(ApiResult<ProductDto>.ErrorResult($"Produk dengan ID {id} tidak ditemukan", 404));
 
-                return Ok(ApiResult<ProductDto>.SuccessResult(product, "Produk ditemukan"));
+                var productDto = new ProductDto
+                {
+                    id = product.id,
+                    productTypeId = product.productTypeId,
+                    name = product.name,
+                    price = product.price,
+                    stock = product.stock,
+                    description = product.description,
+                    imageUrl = product.imageUrl,
+                    productTypeName = product.productTypeName ?? string.Empty,
+                    isActive = product.isActive
+                };
+
+                return Ok(ApiResult<ProductDto>.SuccessResult(productDto, "Produk ditemukan"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saat mengambil produk dengan ID {ProductId}", id);
-                return StatusCode(500, ApiResult<Product>.ErrorResult("Terjadi kesalahan server", 500));
+                return StatusCode(500, ApiResult<ProductDto>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
 
+        // GET: api/products/type/{productTypeId}
         [HttpGet("type/{productTypeId}")]
         public async Task<ActionResult<ApiResult<List<ProductDto>>>> GetProductsByTypeId(int productTypeId)
         {
@@ -112,8 +147,7 @@ namespace ProductApi.Controllers
             {
                 var products = await _productRepository.GetProductsByTypeIdAsync(productTypeId);
 
-                // map the domain model → DTO
-                var dto = products.Select(p => new ProductDto
+                var productDtos = products.Select(p => new ProductDto
                 {
                     id = p.id,
                     productTypeId = p.productTypeId,
@@ -122,11 +156,11 @@ namespace ProductApi.Controllers
                     stock = p.stock,
                     description = p.description,
                     imageUrl = p.imageUrl,
-                    productTypeName = p.productTypeName   // make sure this exists in the query
+                    productTypeName = p.productTypeName ?? string.Empty,
+                    isActive = p.isActive
                 }).ToList();
 
-                return Ok(ApiResult<List<ProductDto>>.SuccessResult(dto,
-                        "Produk berdasarkan tipe berhasil diambil"));
+                return Ok(ApiResult<List<ProductDto>>.SuccessResult(productDtos, "Produk berdasarkan tipe berhasil diambil"));
             }
             catch (Exception ex)
             {
@@ -135,6 +169,7 @@ namespace ProductApi.Controllers
             }
         }
 
+        // GET: api/products/search
         [HttpGet("search")]
         public async Task<ActionResult<ApiResult<List<Product>>>> SearchProducts(
             [FromQuery] string? searchTerm,
@@ -163,6 +198,7 @@ namespace ProductApi.Controllers
                 return StatusCode(500, ApiResult<List<Product>>.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResult<Product>>> CreateProduct([FromBody] Product product)
@@ -223,6 +259,8 @@ namespace ProductApi.Controllers
                 return StatusCode(500, ApiResult.ErrorResult("Terjadi kesalahan server", 500));
             }
         }
+
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ApiResult>> DeleteProduct(int id)

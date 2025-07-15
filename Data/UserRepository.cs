@@ -13,7 +13,7 @@ namespace UserApi.Data
         Task<List<User>> GetAllUsersAsync();
         Task<User?> GetUserByIdAsync(int id);
         Task<User?> DeleteUser(int id); // Delete user by ID
-        Task<bool> CreateUserAsync(RegisterRequest request);
+        Task<int?> CreateUserAsync(RegisterRequest request);
         Task<bool> UpdateLastLoginAsync(int id);
         Task<bool> EmailExistsAsync(string email);
         Task<(User user, string roleName)?> GetUserWithRoleByEmailAsync(string email);
@@ -27,6 +27,7 @@ namespace UserApi.Data
         Task<bool> UpdatePasswordAndClearResetTokenAsync(int id, string newHashedPassword);
 
         Task<bool> DeactivateUserAsync(int userId);
+        Task<bool> ActivateUserAsync(int userId);
 
     }
 
@@ -44,6 +45,21 @@ namespace UserApi.Data
         public async Task<bool> DeactivateUserAsync(int userId)
         {
             const string sql = @"UPDATE users SET isActive = 0 WHERE id = @id";
+
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", userId);
+
+            int affectedRows = await cmd.ExecuteNonQueryAsync();
+
+            return affectedRows > 0;
+        }
+
+        public async Task<bool> ActivateUserAsync(int userId)
+        {
+            const string sql = @"UPDATE users SET isActive = 1 WHERE id = @id";
 
             await using var conn = new MySqlConnection(_connectionString);
             await conn.OpenAsync();
@@ -77,7 +93,6 @@ namespace UserApi.Data
                 u.isActive
         FROM    users u
         JOIN    roles r ON r.id = u.roleId
-         WHERE   u.isActive = 1
         ";
 
             var list = new List<User>();
@@ -161,7 +176,7 @@ namespace UserApi.Data
                 string query = @"
                     SELECT * 
                     FROM users 
-                    WHERE email = @email AND isActive = 1";
+                    WHERE email = @email";
 
                 using (var command = new MySqlCommand(query, connection))
                 {
@@ -278,14 +293,14 @@ namespace UserApi.Data
         public async Task<(User user, string roleName)?> GetUserWithRoleByEmailAsync(string email)
         {
             const string sql = @"
-        SELECT  u.id, u.username, u.email, u.password, u.createdDate,
-                u.lastLoginDate, u.isActive, u.roleId,
-                r.name AS roleName
-        FROM    users u
-        JOIN    roles r ON r.id = u.roleId        -- 🔗 join to roles
-        WHERE   u.email = @email
-          AND   u.isActive = 1
-        LIMIT 1;";
+    SELECT  u.id, u.username, u.email, u.password, u.createdDate,
+            u.lastLoginDate, u.isActive, u.roleId,
+            u.isEmailVerified,                        
+            r.name AS roleName
+    FROM    users u
+    JOIN    roles r ON r.id = u.roleId
+    WHERE   u.email = @email AND u.isActive = 1
+    LIMIT 1;";
 
             await using var conn = new MySqlConnection(_connectionString);
             await conn.OpenAsync();
@@ -305,7 +320,8 @@ namespace UserApi.Data
                     RoleID = rdr.GetInt32("roleId"),
                     CreatedDate = rdr.GetDateTime("createdDate"),
                     LastLoginDate = rdr.IsDBNull("lastLoginDate") ? null : rdr.GetDateTime("lastLoginDate"),
-                    IsActive = rdr.GetBoolean("isActive")
+                    IsActive = rdr.GetBoolean("isActive"),
+                    IsEmailVerified = rdr.GetBoolean("isEmailVerified")  // ✅ baca properti ini
                 };
 
                 string roleName = rdr.GetString("roleName");
@@ -358,32 +374,47 @@ namespace UserApi.Data
 
 
 
-        public async Task<bool> CreateUserAsync(RegisterRequest request)
+
+        public async Task<int?> CreateUserAsync(RegisterRequest request)
         {
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 
                 string query = @"
-            INSERT INTO users (username, email, password, roleId, createdDate, isActive) 
-            VALUES (@username, @email, @password, @roleId, @createdDate, @isActive)";
+            INSERT INTO users (
+                username, email, password, roleId, createdDate, isActive,
+                isEmailVerified, emailVerificationToken, emailTokenCreatedAt
+            ) 
+            VALUES (
+                @username, @email, @password, @roleId, @createdDate, @isActive,
+                @isEmailVerified, @emailVerificationToken, @emailTokenCreatedAt
+            );
+            SELECT LAST_INSERT_ID();
+        ";
 
                 using (var command = new MySqlCommand(query, connection))
                 {
                     string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                    string verificationToken = Guid.NewGuid().ToString();
 
                     command.Parameters.AddWithValue("@username", request.Username ?? "NewUser");
                     command.Parameters.AddWithValue("@email", request.Email);
                     command.Parameters.AddWithValue("@password", hashedPassword);
-                    command.Parameters.AddWithValue("@roleId", 2); // default user role
+                    command.Parameters.AddWithValue("@roleId", 2); // Default role User
                     command.Parameters.AddWithValue("@createdDate", DateTime.Now);
                     command.Parameters.AddWithValue("@isActive", true);
+                    command.Parameters.AddWithValue("@isEmailVerified", false);
+                    command.Parameters.AddWithValue("@emailVerificationToken", verificationToken);
+                    command.Parameters.AddWithValue("@emailTokenCreatedAt", DateTime.Now);
 
-                    int rowsAffected = await command.ExecuteNonQueryAsync();
-                    return rowsAffected > 0;
+                    object result = await command.ExecuteScalarAsync();
+                    return result != null ? Convert.ToInt32(result) : null;
                 }
             }
         }
+
+
 
 
         public async Task<bool> UpdateLastLoginAsync(int id)
@@ -454,6 +485,7 @@ namespace UserApi.Data
                 // Check token validity and update user
                 string query = @"UPDATE users 
                                SET isEmailVerified = 1, 
+                               isActive = 1, 
                                    emailVerificationToken = NULL, 
                                    emailTokenCreatedAt = NULL 
                                WHERE emailVerificationToken = @token 
