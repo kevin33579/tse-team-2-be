@@ -16,7 +16,9 @@ namespace ProductApi.Data
         Task<List<Product>> SearchProductsAsync(string? searchTerm, int? productTypeId = null, decimal? minPrice = null, decimal? maxPrice = null);
         Task<List<ProductDto>> GetAllProductLimitsAsync();
         Task<int> CreateProductAsync(Product product);                                     // CREATE - Return new ID
-        Task<bool> UpdateProductAsync(ProductDto product);
+                                                                                           // Interface
+        Task<bool> UpdateProductAsync(Product product);
+
         Task<List<Schedule>> GetSchedulesByProductIdAsync(int productId);
         // UPDATE - Return success status
         Task<bool> DeleteProductAsync(int id);
@@ -380,47 +382,44 @@ WHERE   pt.id = @productTypeId
             }
         }
 
-        public async Task<bool> UpdateProductAsync(ProductDto product)
+        // Implementasi
+        public async Task<bool> UpdateProductAsync(Product product)
         {
             try
             {
-                using (var connection = new MySqlConnection(_connectionString))
-                {
-                    await connection.OpenAsync();
+                using var connection = new MySqlConnection(_connectionString);
+                await connection.OpenAsync();
 
-                    string queryString = @"
-                UPDATE product 
-                SET name = @name, 
-                    price = @price, 
-                    stock = @stock, 
-                    description = @description,
-                    productTypeId = @productTypeId,
-                    isActive = @isActive,
-                    imageUrl = @imageUrl
-                WHERE id = @id";
+                string queryString = @"
+            UPDATE product 
+            SET name = @name, 
+                price = @price, 
+                stock = @stock, 
+                description = @description,
+                productTypeId = @productTypeId,
+                isActive = @isActive,
+                imageUrl = @imageUrl
+            WHERE id = @id";
 
-                    using (var command = new MySqlCommand(queryString, connection))
-                    {
-                        command.Parameters.AddWithValue("@id", product.id);
-                        command.Parameters.AddWithValue("@name", product.name);
-                        command.Parameters.AddWithValue("@price", product.price);
-                        command.Parameters.AddWithValue("@stock", product.stock);
-                        command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
-                        command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@isActive", product.isActive);
+                using var command = new MySqlCommand(queryString, connection);
+                command.Parameters.AddWithValue("@id", product.id);
+                command.Parameters.AddWithValue("@name", product.name);
+                command.Parameters.AddWithValue("@price", product.price);
+                command.Parameters.AddWithValue("@stock", product.stock);
+                command.Parameters.AddWithValue("@description", product.description ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@productTypeId", product.productTypeId);
+                command.Parameters.AddWithValue("@imageUrl", product.imageUrl ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@isActive", product.isActive);
 
-                        var rowsAffected = await command.ExecuteNonQueryAsync();
-
-                        return rowsAffected > 0;
-                    }
-                }
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
             }
             catch (Exception ex)
             {
                 throw new DatabaseException("UPDATE", $"Gagal mengupdate produk dengan ID: {product.id}", ex);
             }
         }
+
 
         /// <summary>
         /// Menghapus produk dari database berdasarkan ID

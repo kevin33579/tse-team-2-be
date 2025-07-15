@@ -36,7 +36,7 @@ CREATE TABLE users (
 
 
 INSERT INTO users (username, email, `password`, roleId, isActive, isEmailVerified) VALUES
-('admin', 'admin@example.com', '$2a$11$GQkU36Xltn9I6WRJaBkzEuV/p1sVCX8bTuBeYmK2DbQ60mr9b9o1G', 1,1,1), -- password admin123
+('admin', 'admin@example.com', '$2y$10$2bEIOaTYsk5PNLngnP6jQedMlbXG5cjJg6zv30WlrD2jNkyMAfGT6', 1,1,1), -- password admin123
 ('john_doe', 'john@example.com', '$2a$11$xiyq54W4oc7bEC9/cWQKLOI1LyRzLJhQ5rDCyZkN6kM9D88M6RAY2', 2,1,1); -- password password123
 
 -- =====================

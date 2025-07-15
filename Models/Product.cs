@@ -20,6 +20,7 @@ namespace ProductApi.Models
         public string? imageUrl { get; set; }
 
         public string? productTypeName { get; set; }
+        public bool isActive { get; set; } = true;
 
     }
 

@@ -29,6 +29,8 @@ builder.Services.AddControllers();
 // AddEndpointsApiExplorer() = untuk metadata endpoints API
 // Diperlukan untuk Swagger documentation
 builder.Services.AddEndpointsApiExplorer();
+builder.WebHost.UseUrls("http://localhost:5051");
+
 
 // AddSwaggerGen() = mendaftarkan Swagger generator
 // Swagger = tools untuk generate dokumentasi API otomatis
@@ -174,7 +176,7 @@ var app = builder.Build();
 // Urutan middleware PENTING! Request akan melewati middleware dari atas ke bawah
 
 // Environment check - hanya aktif di Development environment
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment()||app.Environment.IsProduction())
 {
     // UseSwagger() = middleware untuk expose Swagger JSON endpoint
     // Biasanya di: /swagger/v1/swagger.json
