@@ -74,6 +74,14 @@ namespace ScheduleApi.Controllers
             return Ok(new { Message = "Schedule created", Id = newId });
 
         }
+        // GET: /api/schedule/user
+        [HttpGet("user")]
+        public async Task<ActionResult<IEnumerable<Schedule>>> GetUserScheduleAsync()
+        {
+            var schedules = await _repository.GetUserScheduleAsync();
+            return Ok(schedules); // 200
+        }
+
 
         // PUT: /api/schedule/{id}
         [HttpPut("{id:int}")]

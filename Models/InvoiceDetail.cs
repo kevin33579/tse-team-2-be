@@ -36,6 +36,12 @@ namespace InvoiceDetailApi.Models        // adjust namespace if needed
         [NotMapped] public string ProductTypeName { get; set; } = string.Empty;
 
         [NotMapped] public DateTime? ScheduleTime { get; set; }   // already present? keep it
+        [Column("quantity")]
+        public int Quantity { get; set; }
+
+        [Column("subTotal", TypeName = "decimal(10,2)")]
+        public decimal SubTotal { get; set; }
+
 
 
 
