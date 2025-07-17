@@ -36,43 +36,75 @@ namespace InvoiceApi.Data
         // INSERT + auto‑generate invoiceCode
         public async Task<uint> CreateAsync(Invoice invoice, CancellationToken ct = default)
         {
-            // 1️⃣ Build a unique code:  INV‑20250701‑<4‑char random>
-            // InvoiceRepository.CreateAsync
             var invoiceCode = $"INV-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..4]}";
 
+            const string sqlInsertInvoice = @"
+        INSERT INTO invoice (user_id, invoiceCode, totalPrice, totalCourse, paymentMethodId)
+        VALUES (@UserId, @InvoiceCode, @TotalPrice, @TotalCourse, @PaymentMethodId);
+        SELECT LAST_INSERT_ID();";
 
-            const string sql = @"
-INSERT INTO invoice
-        (user_id, invoiceCode, totalPrice, totalCourse, paymentMethodId)
-VALUES  (@UserId, @InvoiceCode, @TotalPrice, @TotalCourse, @PaymentMethodId);
-SELECT LAST_INSERT_ID();";           // return new PK
+            const string sqlInsertDetail = @"
+        INSERT INTO detail_invoice (invoice_id, product_id, quantity, subTotal)
+        VALUES (@InvoiceId, @ProductId, @Quantity, @SubTotal);";
+
+            const string sqlUpdateStock = @"
+        UPDATE product SET stock = stock - @Quantity
+        WHERE id = @ProductId AND stock >= @Quantity;"; // Hindari stock minus
 
             try
             {
                 await using var conn = new MySqlConnection(_connString);
                 await conn.OpenAsync(ct);
+                await using var transaction = await conn.BeginTransactionAsync(ct);
 
-                await using var cmd = new MySqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@UserId", invoice.UserId);
-                cmd.Parameters.AddWithValue("@InvoiceCode", invoiceCode);
-                cmd.Parameters.AddWithValue("@TotalPrice", invoice.TotalPrice);
-                cmd.Parameters.AddWithValue("@TotalCourse", invoice.TotalCourse);
-                cmd.Parameters.AddWithValue("@PaymentMethodId", invoice.PaymentMethodId);
+                uint invoiceId;
+                await using (var cmd = new MySqlCommand(sqlInsertInvoice, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", invoice.UserId);
+                    cmd.Parameters.AddWithValue("@InvoiceCode", invoiceCode);
+                    cmd.Parameters.AddWithValue("@TotalPrice", invoice.TotalPrice);
+                    cmd.Parameters.AddWithValue("@TotalCourse", invoice.TotalCourse);
+                    cmd.Parameters.AddWithValue("@PaymentMethodId", invoice.PaymentMethodId);
+                    var result = await cmd.ExecuteScalarAsync(ct);
+                    invoiceId = Convert.ToUInt32(result);
+                }
 
-                var newId = (ulong)await cmd.ExecuteScalarAsync(ct);
+                // Simpan detail_invoice dan kurangi stok
+                foreach (var detail in invoice.Details)
+                {
+                    await using (var cmdDetail = new MySqlCommand(sqlInsertDetail, conn, transaction))
+                    {
+                        cmdDetail.Parameters.AddWithValue("@InvoiceId", invoiceId);
+                        cmdDetail.Parameters.AddWithValue("@ProductId", detail.ProductId);
+                        cmdDetail.Parameters.AddWithValue("@Quantity", detail.Quantity);
+                        cmdDetail.Parameters.AddWithValue("@SubTotal", detail.SubTotal);
+                        await cmdDetail.ExecuteNonQueryAsync(ct);
+                    }
 
-                // 2️⃣ Optionally push the generated code back to the caller object
-                invoice.Id = (uint)newId;
+                    await using (var cmdStock = new MySqlCommand(sqlUpdateStock, conn, transaction))
+                    {
+                        cmdStock.Parameters.AddWithValue("@ProductId", detail.ProductId);
+                        cmdStock.Parameters.AddWithValue("@Quantity", detail.Quantity);
+                        int affected = await cmdStock.ExecuteNonQueryAsync(ct);
+
+                        if (affected == 0)
+                            throw new InvalidOperationException($"Stock tidak cukup untuk produk ID {detail.ProductId}");
+                    }
+                }
+
+                await transaction.CommitAsync(ct);
+
+                invoice.Id = invoiceId;
                 invoice.InvoiceCode = invoiceCode;
 
-                return (uint)newId;
+                return invoiceId;
             }
             catch (Exception ex)
             {
-                throw new DatabaseException("INSERT",
-                    "Gagal membuat invoice baru", ex);
+                throw new DatabaseException("INSERT", "Gagal membuat invoice", ex);
             }
         }
+
 
 
         // ---------- SELECT by user ----------

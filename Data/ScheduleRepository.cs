@@ -18,6 +18,8 @@ namespace ScheduleApi.Data
         Task<bool> DeleteAsync(int id);              // returns true if row deleted
 
         Task<bool> DeactivateAsync(int id);
+        Task<List<Schedule>> GetUserScheduleAsync();
+
 
         Task<bool> ActivateAsync(int id);
 
@@ -43,7 +45,7 @@ namespace ScheduleApi.Data
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            const string query = @"SELECT id, time,isActive FROM schedule WHERE isActive = TRUE ORDER BY time desc";
+            const string query = @"SELECT id, time,isActive FROM schedule WHERE isActive = TRUE AND DATE(time) > CURDATE() ORDER BY time desc";
 
             using var command = new MySqlCommand(query, connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -87,6 +89,36 @@ namespace ScheduleApi.Data
 
             return schedules;
         }
+        public async Task<List<Schedule>> GetUserScheduleAsync()
+        {
+            var schedules = new List<Schedule>();
+
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"
+        SELECT id, time, isActive
+        FROM schedule
+        WHERE isActive = TRUE AND time > NOW()
+        ORDER BY time ASC;
+    ";
+
+            using var command = new MySqlCommand(query, connection);
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                schedules.Add(new Schedule
+                {
+                    Id = reader.GetInt32("id"),
+                    Time = reader.GetDateTime("time"),
+                    IsActive = reader.GetBoolean("isActive")
+                });
+            }
+
+            return schedules;
+        }
+
 
         /* ----------- READ ONE ----------- */
         public async Task<Schedule?> GetByIdAsync(int id)

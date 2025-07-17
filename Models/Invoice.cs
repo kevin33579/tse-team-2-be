@@ -36,6 +36,8 @@ namespace InvoiceApi.Models
 
         [NotMapped]
         public string? PaymentMethodName { get; set; }
+        [NotMapped]
+        public List<InvoiceDetailApi.Models.DetailInvoice> Details { get; set; } = new();
 
     }
 }
